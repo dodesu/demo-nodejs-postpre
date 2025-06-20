@@ -23,7 +23,6 @@ import databaseConfig from './config/database.config';
           password: dbConfig.password,
           database: dbConfig.database,
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          migrations: [__dirname + '/src/migrations/*.{ts,js}'],
         };
       },
     }),

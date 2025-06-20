@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, Table } from "typeorm";
 
-export class CreateBooksTable implements MigrationInterface {
+export class CreateBooksTable1750254737745 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
@@ -20,9 +20,9 @@ export class CreateBooksTable implements MigrationInterface {
                         isNullable: false,
                     },
                     {
-                        name: 'author',
-                        type: 'varchar',
-                        isNullable: false,
+                        name: 'author_id',
+                        type: 'int',
+                        isNullable: true,
                     },
                     {
                         name: 'published_at',
@@ -55,5 +55,4 @@ export class CreateBooksTable implements MigrationInterface {
     public async down(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.dropTable('books');
     }
-
 }
