@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BookModule } from './modules/book/book.module';
+import { AuthorModule } from './modules/author/author.module';
+import { GenreModule } from './modules/genre/genre.module';
 import databaseConfig from './config/database.config';
 @Module({
   imports: [
@@ -35,6 +37,10 @@ import databaseConfig from './config/database.config';
     AuthModule,
 
     BookModule,
+
+    AuthorModule,
+
+    GenreModule,
   ]
 })
 export class AppModule { }

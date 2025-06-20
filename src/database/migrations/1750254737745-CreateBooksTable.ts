@@ -33,9 +33,10 @@ export class CreateBooksTable1750254737745 implements MigrationInterface {
                         name: 'created_at',
                         type: 'timestamp',
                         default: 'now()',
+                        isNullable: false,
                     },
                     {
-                        name: 'isRead',
+                        name: 'is_read',
                         type: 'boolean',
                         default: false,
                     }
