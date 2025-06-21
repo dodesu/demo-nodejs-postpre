@@ -23,7 +23,7 @@
     "mig:revert": "npm run typeorm migration:revert",
     "mig:generate": "npm run typeorm migration:generate",
     "mig:create": "npx ts-node ./node_modules/typeorm/cli.js migration:create",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/initial-data-seeder.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/_index.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.0.1",
