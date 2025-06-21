@@ -22,7 +22,7 @@
     "mig:run": "npm run typeorm migration:run",
     "mig:revert": "npm run typeorm migration:revert",
     "mig:generate": "npm run typeorm migration:generate",
-    "mig:create": "npm run typeorm migration:create",
+    "mig:create": "npx ts-node ./node_modules/typeorm/cli.js migration:create",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/initial-data-seeder.ts"
   },
   "dependencies": {

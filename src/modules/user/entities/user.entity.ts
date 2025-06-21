@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToMany,
+    JoinTable
+} from 'typeorm';
+
+import { Book } from '../../book/entities/book.entity';
 
 @Entity('users')
 export class User {
@@ -19,4 +27,19 @@ export class User {
 
     @Column({ name: 'updated_at', type: 'timestamp', default: () => 'now()' })
     updatedAt: Date;
+
+    @ManyToMany(() => Book, (book) => book.readers)
+    @JoinTable({
+        name: 'read_books',
+        joinColumn: {
+            name: 'user_id',
+            referencedColumnName: 'id',
+        },
+        inverseJoinColumn: {
+            name: 'book_id',
+            referencedColumnName: 'id',
+        },
+    })
+    readBooks: Book[];
+
 }

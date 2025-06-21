@@ -35,11 +35,6 @@ export class CreateBooksTable1750254737745 implements MigrationInterface {
                         default: 'now()',
                         isNullable: false,
                     },
-                    {
-                        name: 'is_read',
-                        type: 'boolean',
-                        default: false,
-                    }
                 ],
                 foreignKeys: [
                     {
