@@ -21,7 +21,14 @@ export class Book {
     @Column()
     title: string;
 
-    // Many books belong to one author
+    @Column({ type: 'date', nullable: true, name: 'published_at' })
+    publishedAt: Date;
+
+    @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
+    createdAt: Date;
+
+    //#region Relations:
+
     @ManyToOne(() => Author, (author) => author.books)
     @JoinColumn({ name: 'author_id' })
     author: Author; //use: <instance of Book>.author
@@ -40,12 +47,8 @@ export class Book {
     })
     genres: Genre[];
 
-    @Column({ type: 'date', nullable: true, name: 'published_at' })
-    publishedAt: Date;
+    //#endregion
 
     @ManyToMany(() => User, (user) => user.readBooks)
     readers: User[];
-
-    @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
-    createdAt: Date;
 }

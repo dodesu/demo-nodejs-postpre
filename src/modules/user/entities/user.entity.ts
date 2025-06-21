@@ -28,6 +28,8 @@ export class User {
     @Column({ name: 'updated_at', type: 'timestamp', default: () => 'now()' })
     updatedAt: Date;
 
+    //#region Relations:
+
     @ManyToMany(() => Book, (book) => book.readers)
     @JoinTable({
         name: 'read_books',
@@ -41,5 +43,7 @@ export class User {
         },
     })
     readBooks: Book[];
+
+    //#endregion
 
 }
