@@ -21,8 +21,9 @@
     "mig:show": "npm run typeorm migration:show",
     "mig:run": "npm run typeorm migration:run",
     "mig:revert": "npm run typeorm migration:revert",
-    "mig:generate": "npm run typeorm migration:generate -- -n",
-    "mig:create": "npm run typeorm migration:create -- -n"
+    "mig:generate": "npm run typeorm migration:generate",
+    "mig:create": "npx ts-node ./node_modules/typeorm/cli.js migration:create",
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/_index.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.0.1",
@@ -30,6 +31,8 @@
     "@nestjs/core": "11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "11.0.0",
+    "@types/bcryptjs": "^3.0.0",
+    "bcryptjs": "^3.0.2",
     "ejs": "^3.1.10",
     "pg": "8.16.0",
     "reflect-metadata": "0.2.2",
