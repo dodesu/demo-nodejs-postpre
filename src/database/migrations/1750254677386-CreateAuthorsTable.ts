@@ -17,6 +17,7 @@ export class CreateAuthorsTable1750254677386 implements MigrationInterface {
                     {
                         name: 'name',
                         type: 'varchar',
+                        isUnique: true,
                         isNullable: false,
                     },
                 ]
