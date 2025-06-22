@@ -42,6 +42,19 @@ export class BookService {
         return book;
     }
 
+    /**
+     * Creates a new book record in the database.
+     * 
+     * @param dto - Data transfer object containing book details including:
+     *   - title: The title of the book.
+     *   - authorId: The ID of the author.
+     *   - genreIds: An optional array of genre IDs.
+     *   - publishedAt: An optional publication date of the book.
+     * 
+     * @throws NotFoundException if the specified author or any of the genre IDs do not exist.
+     * 
+     * @returns The newly created book entity.
+     */
     async create(dto: CreateBookDto) {
         const { title, authorId, genreIds, publishedAt } = dto;
 
@@ -64,6 +77,20 @@ export class BookService {
         return this.bookRepository.save(book);
     }
 
+    /**
+     * Updates an existing book record in the database.
+     * 
+     * @param id - The ID of the book to update.
+     * @param dto - Data transfer object containing book details to update including:
+     *   - title: The title of the book. Optional.
+     *   - authorId: The ID of the author. Optional.
+     *   - genreIds: An optional array of genre IDs.
+     *   - publishedAt: An optional publication date of the book. Optional.
+     * 
+     * @throws NotFoundException if the specified book, author or any of the genre IDs do not exist.
+     * 
+     * @returns The updated book entity.
+     */
     async update(id: number, dto: UpdateBookDto) {
         const { title, authorId, genreIds, publishedAt } = dto;
 
@@ -122,6 +149,14 @@ export class BookService {
         }
     }
 
+    /**
+    * Validates that all the provided genre IDs exist in the found genres.
+    *
+    * @param genreIds - An array of genre IDs to validate.
+    * @param foundGenres - An array of Genre entities that were found in the database.
+    *
+    * @throws NotFoundException if any of the provided genre IDs do not exist in the found genres.
+    */
     private validateGenreIdsOrThrow(genreIds: number[], foundGenres: Genre[]) {
         const foundIds = foundGenres.map(g => g.id);
         const missingIds = (genreIds || []).filter(id => !foundIds.includes(id));
