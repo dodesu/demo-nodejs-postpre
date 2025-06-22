@@ -1,6 +1,6 @@
 import { IsString, Length } from 'class-validator';
 
-export class CreateAuthorDto {
+export class CreateGenreDto {
 
     @IsString()
     //Fix latter: Create a custom validator @IsNameUnique

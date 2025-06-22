@@ -14,7 +14,7 @@ export class AuthorService {
     ) { }
 
     getAll() {
-        return this.authorRepository.find();
+        return this.authorRepository.find({ order: { id: 'ASC' } });
     }
 
     async getById(id: number) {
