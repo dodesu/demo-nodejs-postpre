@@ -7,6 +7,7 @@ import { BookModule } from './modules/book/book.module';
 import { AuthorModule } from './modules/author/author.module';
 import { GenreModule } from './modules/genre/genre.module';
 import databaseConfig from './config/database.config';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -35,6 +36,8 @@ import databaseConfig from './config/database.config';
     UserModule,
 
     AuthModule,
+
+    AuthorModule,
 
     BookModule,
 

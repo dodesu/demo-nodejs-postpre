@@ -3,6 +3,7 @@ import {
     PrimaryGeneratedColumn,
     Column,
     OneToMany,
+    Unique,
 } from 'typeorm';
 import { Book } from '../../book/entities/book.entity';
 
@@ -12,6 +13,7 @@ export class Author {
     id: number;
 
     @Column({ nullable: false })
+    @Unique(['name'])
     name: string;
 
     // One author has many books
