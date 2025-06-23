@@ -6,6 +6,7 @@ import { Author } from '../author/entities/author.entity';
 import { Genre } from '../genre/entities/genre.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { SearchBookDto } from './dto/search-book.dto';
 
 @Injectable()
 export class BookService {
@@ -171,6 +172,108 @@ export class BookService {
 
         if (result.affected === 0) {
             throw new NotFoundException(`Book with id ${id} not found`);
+        }
+    }
+
+    /**
+     * Searches for books with advanced filtering, sorting, and pagination options.
+     *
+     * @param dto - Data transfer object containing search criteria including:
+     *   - title: Optional partial or full title to search for.
+     *   - authorId: Optional ID of the author to filter books by.
+     *   - genreIds: Optional array of genre IDs to filter books by.
+     *   - publishedFrom: Optional start date to filter books published after this date.
+     *   - publishedTo: Optional end date to filter books published before this date.
+     *   - sort: Optional sorting order ('title_asc', 'title_desc', 'published_asc', 'published_desc').
+     *   - page: Optional page number for pagination (default is 1).
+     *   - limit: Optional number of items per page for pagination (default is 10).
+     *
+     * @returns An object containing an array of book entities matching the search criteria,
+     *          and metadata including total count, current page, limit, and total pages.
+     */
+    async searchAdvanced(dto: SearchBookDto) {
+        const {
+            title,
+            authorId,
+            genreIds,
+            publishedFrom,
+            publishedTo,
+            sort = 'title_asc',
+            page = 1,
+            limit = 10
+        } = dto;
+
+        const whereClauses = {
+            title: `book.title ILIKE :title`,
+            author: `author.id = :authorId`,
+            genres: `genres.id IN (:...genreIds)`,
+            published: `book.publishedAt BETWEEN :from AND :to`
+        };
+
+        const bookQuery = this.bookRepository.createQueryBuilder('book')
+            .leftJoinAndSelect('book.author', 'author')
+            .leftJoinAndSelect('book.genres', 'genres')
+            .where('1 = 1');
+        // Add a dummy WHERE clause to allow chaining .andWhere() without checking if it's the first condition
+
+        // #Searching..
+
+        if (title) {
+            bookQuery.andWhere(whereClauses.title, { title: `%${title}%` });
+        }
+
+        if (authorId) {
+            bookQuery.andWhere(whereClauses.author, { authorId });
+        }
+
+        if (genreIds?.length) {
+            // Apply a subquery to filter by genre IDs, ensuring complete book data is retained even if some genres don't match.
+            const subQuery = this.bookRepository.createQueryBuilder('book')
+                .select('book.id')
+                .leftJoin('book.genres', 'genres')
+                .where(whereClauses.genres, { genreIds });
+
+            // Chain the subquery to the main query 
+            bookQuery.andWhere(`book.id IN (${subQuery.getQuery()})`)
+                .setParameters(subQuery.getParameters());
+        }
+
+        if (publishedFrom && publishedTo) {
+            bookQuery.andWhere(whereClauses.published, {
+                from: publishedFrom,
+                to: publishedTo,
+            });
+        }
+
+        // #Sort
+        const [sortField, sortDir] = sort.split('_');
+        const sortMap = {
+            title: 'book.title',
+            published: 'book.publishedAt',
+        };
+
+        const field = sortMap[sortField] || 'book.title';
+        const direction = sortDir?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        bookQuery.orderBy(field, direction as 'ASC' | 'DESC');
+        // TS considers the sortDir as a string, so we need to cast it to 'ASC' | 'DESC' to avoid errors
+
+        // #Pagination
+        const skip = (page - 1) * limit;
+        const [data, total] = await bookQuery
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data,
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages
+            }
         }
     }
 }
