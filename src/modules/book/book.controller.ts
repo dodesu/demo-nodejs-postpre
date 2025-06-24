@@ -29,6 +29,12 @@ export class BookController {
         return this.bookService.getAll();
     }
 
+    // #Important note: Place '/search' before '/:id'. If not, it will be matched to '/:id', and it error
+    @Get('search')
+    search(@Query() dto: SearchBookDto) {
+        return this.bookService.search(dto);
+    }
+
     @Get(':id')
     getById(@Param('id') id: number) {
         return this.bookService.getById(+id);
@@ -50,8 +56,5 @@ export class BookController {
         return this.bookService.delete(+id);
     }
 
-    @Get('search')
-    search(@Query() dto: SearchBookDto) {
-        // return this.bookService.search(dto);
-    }
+
 }

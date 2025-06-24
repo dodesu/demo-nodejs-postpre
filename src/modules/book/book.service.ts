@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource } from 'typeorm';
+import { Repository, In, DataSource, ILike } from 'typeorm';
 import { Book } from './entities/book.entity';
 import { Author } from '../author/entities/author.entity';
 import { Genre } from '../genre/entities/genre.entity';
@@ -173,6 +173,51 @@ export class BookService {
         if (result.affected === 0) {
             throw new NotFoundException(`Book with id ${id} not found`);
         }
+    }
+
+    /**
+     * Searches for books by keyword in their title, author's name, or genres' names.
+     *
+     * @param dto - Data transfer object containing search criteria including:
+     *   - keyword: The search keyword.
+     *
+     * @returns An array of book entities matching the search criteria.
+     */
+    async search(dto: SearchBookDto) {
+        const { keyword } = dto;
+
+        // # Subquery
+
+        const authorMatch = this.bookRepository
+            .createQueryBuilder('book')
+            .leftJoin('book.author', 'author')
+            .select('book.id')
+            .where('author.name ILIKE :keyword');
+
+        const genreMatch = this.bookRepository
+            .createQueryBuilder('book')
+            .leftJoin('book.genres', 'genre')
+            .select('book.id')
+            .where('genre.name ILIKE :keyword');
+
+        const titleMatch = this.bookRepository
+            .createQueryBuilder('book')
+            .select('book.id')
+            .where('book.title ILIKE :keyword');
+
+        // # Main query
+
+        const books = await this.bookRepository
+            .createQueryBuilder("book")
+            .leftJoinAndSelect("book.author", "author")
+            .leftJoinAndSelect("book.genres", "genre")
+            .where(`book.id IN (${titleMatch.getQuery()})`)
+            .orWhere(`book.id  IN (${authorMatch.getQuery()})`)
+            .orWhere(`book.id IN (${genreMatch.getQuery()})`)
+            .setParameters({ keyword: `%${keyword}%` })
+            .getMany();
+
+        return books;
     }
 
     /**

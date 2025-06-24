@@ -13,6 +13,10 @@ import { Transform, Type } from 'class-transformer';
 export class SearchBookDto {
 
     @IsOptional()
+    // @MaxLength(255) 
+    keyword?: string;
+
+    @IsOptional()
     @MaxLength(255)
     title: string;
 
