@@ -1,5 +1,6 @@
 import {
     Controller,
+    Query,
     Delete,
     Get,
     Param,
@@ -11,14 +12,27 @@ import {
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { SearchBookDto } from './dto/search-book.dto';
 
 @Controller('books')
 export class BookController {
     constructor(private readonly bookService: BookService) { }
 
     @Get()
-    getAll() {
+    getAll(@Query() dto: SearchBookDto) {
+        const hasQuery = Object.keys(dto).length > 0;
+
+        if (hasQuery) {
+            return this.bookService.searchAdvanced(dto);
+        }
+
         return this.bookService.getAll();
+    }
+
+    // #Important note: Place '/search' before '/:id'. If not, it will be matched to '/:id', and it error
+    @Get('search')
+    search(@Query() dto: SearchBookDto) {
+        return this.bookService.search(dto);
     }
 
     @Get(':id')
@@ -41,4 +55,6 @@ export class BookController {
     delete(@Param('id') id: number) {
         return this.bookService.delete(+id);
     }
+
+
 }
