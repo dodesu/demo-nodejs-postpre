@@ -19,7 +19,7 @@ export class UserController {
 
     @Get(':id')
     getById(@Param('id') id: number) {
-        return this.userService.getById(id);
+        return this.userService.getByIdOrThrow(id);
     }
 
     @Post()
