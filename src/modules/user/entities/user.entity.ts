@@ -3,12 +3,15 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToMany,
-    JoinTable
+    JoinTable,
+    Unique
 } from 'typeorm';
 
 import { Book } from '../../book/entities/book.entity';
 
 @Entity('users')
+@Unique(['username'])
+@Unique(['email'])
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
