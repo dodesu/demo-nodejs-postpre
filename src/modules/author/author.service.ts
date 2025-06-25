@@ -41,6 +41,8 @@ export class AuthorService {
             throw new NotFoundException(`Author with id ${id} not found`);
         }
 
+        if (name) author.name = name;
+
         return this.authorRepository.save(author);
     }
 
