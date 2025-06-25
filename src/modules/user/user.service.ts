@@ -21,6 +21,14 @@ export class UserService {
         return this.userRepository.findOne({ where: { id } });
     }
 
+    getByEmail(email: string) {
+        return this.userRepository.findOne({ where: { email } });
+    }
+
+    getByUsername(username: string) {
+        return this.userRepository.findOne({ where: { username } });
+    }
+
     async create(dto: CreateUserDto) {
         const { username, email, password } = dto;
 
@@ -58,7 +66,7 @@ export class UserService {
     async update(id: number, dto: UpdateUserDto) {
         const { username, email, password } = dto;
 
-        const user = await this.userRepository.findOne({ where: { id } });
+        const user = await this.getById(id);
 
         if (!user) {
             throw new NotFoundException(`User with ID ${id} not found.`);
