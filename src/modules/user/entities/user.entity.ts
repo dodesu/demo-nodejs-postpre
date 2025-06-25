@@ -4,7 +4,9 @@ import {
     Column,
     ManyToMany,
     JoinTable,
-    Unique
+    Unique,
+    CreateDateColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 
 import { Book } from '../../book/entities/book.entity';
@@ -25,10 +27,10 @@ export class User {
     @Column({ length: 60 })
     password: string;
 
-    @Column({ name: 'created_at', type: 'timestamp', default: () => 'now()' })
+    @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;
 
-    @Column({ name: 'updated_at', type: 'timestamp', default: () => 'now()' })
+    @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
     updatedAt: Date;
 
     //#region Relations:
