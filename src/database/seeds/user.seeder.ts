@@ -1,6 +1,6 @@
 import { Connection } from 'typeorm';
 import { User } from '../../modules/user/entities/user.entity';
-import * as bcrypt from 'bcryptjs'; // Cài đặt: npm install bcryptjs @types/bcryptjs
+import * as bcrypt from 'bcrypt';
 
 export async function UserSeeder(connection: Connection) {
     const repository = connection.getRepository(User);

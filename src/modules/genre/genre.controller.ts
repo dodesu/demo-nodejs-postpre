@@ -9,8 +9,8 @@ import {
     Post,
 } from '@nestjs/common';
 import { GenreService } from './genre.service';
-import { CreateGenreDto } from './dto/create-genre';
-import { UpdateGenreDto } from './dto/update-genre';
+import { CreateGenreDto } from './dto/create-genre.dto';
+import { UpdateGenreDto } from './dto/update-genre.dto';
 
 @Controller('genres')
 export class GenreController {

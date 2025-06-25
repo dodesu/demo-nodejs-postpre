@@ -8,12 +8,13 @@ import {
 import { Book } from '../../book/entities/book.entity';
 
 @Entity('authors')
+@Unique(['name'])
 export class Author {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ nullable: false })
-    @Unique(['name'])
+
     name: string;
 
     // One author has many books

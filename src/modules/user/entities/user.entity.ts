@@ -3,12 +3,17 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToMany,
-    JoinTable
+    JoinTable,
+    Unique,
+    CreateDateColumn,
+    UpdateDateColumn,
 } from 'typeorm';
 
 import { Book } from '../../book/entities/book.entity';
 
 @Entity('users')
+@Unique(['username'])
+@Unique(['email'])
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
@@ -22,10 +27,10 @@ export class User {
     @Column({ length: 60 })
     password: string;
 
-    @Column({ name: 'created_at', type: 'timestamp', default: () => 'now()' })
+    @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;
 
-    @Column({ name: 'updated_at', type: 'timestamp', default: () => 'now()' })
+    @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
     updatedAt: Date;
 
     //#region Relations:

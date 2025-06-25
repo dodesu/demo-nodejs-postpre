@@ -2,12 +2,12 @@ import { Entity, PrimaryGeneratedColumn, Column, Unique, ManyToMany } from 'type
 import { Book } from '../../book/entities/book.entity';
 
 @Entity('genres')
+@Unique(['name'])
 export class Genre {
     @PrimaryGeneratedColumn()
     id: number;
 
     @Column()
-    @Unique(['name'])
     name: string;
 
     @ManyToMany(() => Book, (book) => book.genres)
