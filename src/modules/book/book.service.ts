@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource, ILike } from 'typeorm';
 import { Book } from './entities/book.entity';
@@ -93,7 +93,7 @@ export class BookService {
      * 
      * @returns The updated book entity.
      */
-    async update(id: number, dto: UpdateBookDto) {
+    async update(id: number, dto: UpdateBookDto, user) {
         const { title, authorId, genreIds, publishedAt } = dto;
 
         //#Start transaction
@@ -104,10 +104,15 @@ export class BookService {
         try {
             const bookInTx = await queryRunner.manager.findOne(Book, {
                 where: { id },
-                relations: ['author', 'genres'],
+                relations: ['author', 'genres', 'creator'],
             });
+
             if (!bookInTx) {
                 throw new NotFoundException(`Book with id ${id} not found`);
+            }
+
+            if (bookInTx.creator.id !== user.id) {
+                throw new ForbiddenException(`You are not allowed to update this book`);
             }
 
             // #Updating
@@ -142,7 +147,12 @@ export class BookService {
 
             const saved = await queryRunner.manager.save(bookInTx);
             await queryRunner.commitTransaction();
-            return saved;
+
+            const result = {
+                ...saved,
+                creator: saved.creator?.username
+            };
+            return result;
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;

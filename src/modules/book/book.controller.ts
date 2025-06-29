@@ -49,9 +49,10 @@ export class BookController {
         return this.bookService.create(dto, user);
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Patch(':id')
-    update(@Param('id') id: number, @Body() dto: UpdateBookDto) {
-        return this.bookService.update(+id, dto);
+    update(@Param('id') id: number, @Body() dto: UpdateBookDto, @CurrentUser() user) {
+        return this.bookService.update(+id, dto, user);
     }
 
     @Delete(':id')

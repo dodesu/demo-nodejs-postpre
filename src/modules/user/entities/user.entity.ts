@@ -9,6 +9,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 
 import { Book } from '../../book/entities/book.entity';
 
@@ -25,12 +26,15 @@ export class User {
     @Column({ unique: true, length: 255 })
     email?: string;
 
+    @Exclude()
     @Column({ length: 60 })
     password: string;
 
+    @Exclude()
     @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;
 
+    @Exclude()
     @UpdateDateColumn({ type: 'timestamp', name: 'updated_at' })
     updatedAt: Date;
 
