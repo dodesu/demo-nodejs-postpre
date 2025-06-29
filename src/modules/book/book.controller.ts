@@ -7,12 +7,15 @@ import {
     Patch,
     Post,
     Body,
-    HttpCode
+    HttpCode,
+    UseGuards
 } from '@nestjs/common';
 import { BookService } from './book.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('books')
 export class BookController {
@@ -40,9 +43,10 @@ export class BookController {
         return this.bookService.getById(+id);
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Post()
-    create(@Body() dto: CreateBookDto) {
-        return this.bookService.create(dto);
+    create(@Body() dto: CreateBookDto, @CurrentUser() user) {
+        return this.bookService.create(dto, user);
     }
 
     @Patch(':id')

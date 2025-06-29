@@ -56,7 +56,8 @@ export class BookService {
      * 
      * @returns The newly created book entity.
      */
-    async create(dto: CreateBookDto) {
+    async create(dto: CreateBookDto, user) {
+        // note: think about validate a user if others use this service
         const { title, authorId, genreIds, publishedAt } = dto;
 
         const author = await this.authorRepository.findOneBy({ id: authorId });
@@ -67,12 +68,12 @@ export class BookService {
         });
         this.validateGenreIdsOrThrow(genreIds || [], genres);
 
-
         const book = this.bookRepository.create({
             title,
             author,
             genres,
-            publishedAt: publishedAt ? new Date(publishedAt) : undefined
+            publishedAt: publishedAt ? new Date(publishedAt) : undefined,
+            creator: user.id
         });
 
         return this.bookRepository.save(book);
