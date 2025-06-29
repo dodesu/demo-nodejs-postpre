@@ -55,10 +55,11 @@ export class BookController {
         return this.bookService.update(+id, dto, user);
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Delete(':id')
     @HttpCode(204)
-    delete(@Param('id') id: number) {
-        return this.bookService.delete(+id);
+    delete(@Param('id') id: number, @CurrentUser() user) {
+        return this.bookService.delete(+id, user);
     }
 
 

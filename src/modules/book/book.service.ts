@@ -178,13 +178,37 @@ export class BookService {
         }
     }
 
-    async delete(id: number) {
+    async delete(id: number, user) {
+        const isAllowed = await this.isCreatorOfBook(id, user.id);
+        if (!isAllowed) {
+            throw new ForbiddenException(`You are not allowed to delete this book`);
+        }
+
         const result = await this.bookRepository.delete(id);
 
         if (result.affected === 0) {
             throw new NotFoundException(`Book with id ${id} not found`);
+            //this probably never happened, should be above isCreatorOfBook
+            // but placed it here temporarily
         }
     }
+
+    /**
+     * Checks if the user is the creator of the book with the given ID.
+     * If userId or bookId not exist always return false
+     */
+    private async isCreatorOfBook(bookId: number, userId: number) {
+        const book = await this.bookRepository.findOne({
+            where: { id: bookId },
+            relations: ['creator'],
+        });
+        if (book?.creator.id === userId) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Searches for books by keyword in their title, author's name, or genres' names.
