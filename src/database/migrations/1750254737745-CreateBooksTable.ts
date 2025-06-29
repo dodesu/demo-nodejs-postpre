@@ -25,6 +25,11 @@ export class CreateBooksTable1750254737745 implements MigrationInterface {
                         isNullable: true,
                     },
                     {
+                        name: 'creator_id',
+                        type: 'int',
+                        isNullable: false,
+                    },
+                    {
                         name: 'published_at',
                         type: 'date',
                         isNullable: true,
@@ -43,6 +48,13 @@ export class CreateBooksTable1750254737745 implements MigrationInterface {
                         referencedColumnNames: ['id'],
                         onDelete: 'SET NULL',
                     },
+                    {
+                        columnNames: ['creator_id'],
+                        referencedTableName: 'users',
+                        referencedColumnNames: ['id'],
+                        onDelete: 'CASCADE',
+                    }
+
                 ],
             })
         );
