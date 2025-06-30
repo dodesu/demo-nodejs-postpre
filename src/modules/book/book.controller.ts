@@ -23,9 +23,12 @@ export class BookController {
 
     @Get()
     getAll(@Query() dto: SearchBookDto) {
-        const hasQuery = Object.keys(dto).length > 0;
+        const undefinedCount = Object.values(dto).filter((v) => v === undefined).length;
+        const haveDefaultValue = 3; // sort, page, limit
+        const hasQuery = undefinedCount < Object.keys(dto).length - haveDefaultValue;
 
         if (hasQuery) {
+            console.log(dto);
             return this.bookService.searchAdvanced(dto);
         }
 

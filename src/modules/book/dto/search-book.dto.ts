@@ -10,6 +10,8 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
+type Sort = 'title_asc' | 'title_desc' | 'published_asc' | 'published_desc';
+
 export class SearchBookDto {
 
     @IsOptional()
@@ -57,7 +59,7 @@ export class SearchBookDto {
         'published_asc',
         'published_desc',
     ])
-    sort?: 'title_asc' | 'title_desc' | 'published_asc' | 'published_desc';
+    sort?: Sort = 'title_asc';
 
     @IsOptional()
     @Type(() => Number)

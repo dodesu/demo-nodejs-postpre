@@ -24,13 +24,15 @@ export class BookService {
     ) { }
 
     async getAll() {
-        return this.bookRepository.find({ relations: ['author', 'genres'] });
+        return this.bookRepository.find({
+            relations: ['author', 'genres', 'creator']
+        });
     }
 
     async getById(id: number) {
         const book = await this.bookRepository.findOne({
             where: { id },
-            relations: ['author', 'genres'],
+            relations: ['author', 'genres', 'creator'],
             order: {
                 id: 'ASC'
             }
@@ -148,11 +150,7 @@ export class BookService {
             const saved = await queryRunner.manager.save(bookInTx);
             await queryRunner.commitTransaction();
 
-            const result = {
-                ...saved,
-                creator: saved.creator?.username
-            };
-            return result;
+            return saved;
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;

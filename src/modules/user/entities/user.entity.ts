@@ -23,6 +23,7 @@ export class User {
     @Column({ unique: true, length: 50 })
     username: string;
 
+    @Exclude()
     @Column({ unique: true, length: 255 })
     email?: string;
 
