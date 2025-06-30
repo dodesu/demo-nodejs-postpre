@@ -28,7 +28,6 @@ export class BookController {
         const hasQuery = undefinedCount < Object.keys(dto).length - haveDefaultValue;
 
         if (hasQuery) {
-            console.log(dto);
             return this.bookService.searchAdvanced(dto);
         }
 

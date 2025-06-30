@@ -7,6 +7,7 @@ import { Genre } from '../genre/entities/genre.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
+import { BookResponseDto } from './dto/book-response.dto';
 
 @Injectable()
 export class BookService {
@@ -24,9 +25,14 @@ export class BookService {
     ) { }
 
     async getAll() {
-        return this.bookRepository.find({
-            relations: ['author', 'genres', 'creator']
+        const books = await this.bookRepository.find({
+            relations: ['author', 'genres', 'creator'],
+            order: {
+                id: 'ASC',
+            },
         });
+
+        return books.map((b) => new BookResponseDto(b));
     }
 
     async getById(id: number) {
@@ -42,7 +48,7 @@ export class BookService {
             throw new NotFoundException(`Book with id ${id} not found`);
         }
 
-        return book;
+        return new BookResponseDto(book);
     }
 
     /**
