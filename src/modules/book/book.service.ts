@@ -81,10 +81,12 @@ export class BookService {
             author,
             genres,
             publishedAt: publishedAt ? new Date(publishedAt) : undefined,
-            creator: user.id
+            creator: user
         });
 
-        return this.bookRepository.save(book);
+        const bookSaved = await this.bookRepository.save(book);
+
+        return new BookResponseDto(bookSaved);
     }
 
     /**
@@ -156,7 +158,7 @@ export class BookService {
             const saved = await queryRunner.manager.save(bookInTx);
             await queryRunner.commitTransaction();
 
-            return saved;
+            return new BookResponseDto(saved);
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
