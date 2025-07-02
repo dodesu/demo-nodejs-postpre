@@ -22,7 +22,7 @@ export class BookController {
     constructor(private readonly bookService: BookService) { }
 
     @Get()
-    getAll(@Query() dto: SearchBookDto) {
+    getAll(@Query() dto: SearchBookDto, @CurrentUser() user) {
         const undefinedCount = Object.values(dto).filter((v) => v === undefined).length;
         const haveDefaultValue = 3; // sort, page, limit
         const hasQuery = undefinedCount < Object.keys(dto).length - haveDefaultValue;

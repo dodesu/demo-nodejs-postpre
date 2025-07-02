@@ -282,6 +282,7 @@ export class BookService {
             title,
             authorId,
             genreIds,
+            creatorName,
             publishedFrom,
             publishedTo,
             sort = 'title_asc',
@@ -292,6 +293,7 @@ export class BookService {
         const whereClauses = {
             title: `book.title ILIKE :title`,
             author: `author.id = :authorId`,
+            creator: `creator.username ILIKE :name`,
             genres: `genres.id IN (:...genreIds)`,
             published: `book.publishedAt BETWEEN :from AND :to`
         };
@@ -299,6 +301,7 @@ export class BookService {
         const bookQuery = this.bookRepository.createQueryBuilder('book')
             .leftJoinAndSelect('book.author', 'author')
             .leftJoinAndSelect('book.genres', 'genres')
+            .leftJoinAndSelect('book.creator', 'creator')
             .where('1 = 1');
         // Add a dummy WHERE clause to allow chaining .andWhere() without checking if it's the first condition
 
@@ -310,6 +313,10 @@ export class BookService {
 
         if (authorId) {
             bookQuery.andWhere(whereClauses.author, { authorId });
+        }
+
+        if (creatorName) {
+            bookQuery.andWhere(whereClauses.creator, { name: `%${creatorName}%` });
         }
 
         if (genreIds?.length) {
@@ -351,9 +358,8 @@ export class BookService {
             .getManyAndCount();
 
         const totalPages = Math.ceil(total / limit);
-
         return {
-            data,
+            data: data.map((item) => new BookResponseDto(item)),
             meta: {
                 total,
                 page,

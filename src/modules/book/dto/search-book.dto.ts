@@ -20,13 +20,17 @@ export class SearchBookDto {
 
     @IsOptional()
     @MaxLength(255)
-    title: string;
+    title?: string;
 
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    authorId: number;
+    authorId?: number;
+
+    @IsOptional()
+    @MaxLength(255)
+    creatorName?: string;
 
     @IsOptional()
     // @Type(() => Number) not correct
