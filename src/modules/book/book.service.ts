@@ -8,6 +8,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
 import { BookResponseDto } from './dto/book-response.dto';
+import { SelectQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class BookService {
@@ -225,7 +226,7 @@ export class BookService {
      * @returns An array of book entities matching the search criteria.
      */
     async search(dto: SearchBookDto) {
-        const { keyword } = dto;
+        const { keyword, page, limit } = dto;
 
         // # Subquery
 
@@ -246,19 +247,36 @@ export class BookService {
             .select('book.id')
             .where('book.title ILIKE :keyword');
 
+        const creatorMatch = this.bookRepository
+            .createQueryBuilder('book')
+            .leftJoin('book.creator', 'creator')
+            .select('book.id')
+            .where('creator.username ILIKE :keyword');
+
         // # Main query
 
-        const books = await this.bookRepository
+        const bookQuery = await this.bookRepository
             .createQueryBuilder("book")
             .leftJoinAndSelect("book.author", "author")
             .leftJoinAndSelect("book.genres", "genre")
+            .leftJoinAndSelect("book.creator", "creator")
             .where(`book.id IN (${titleMatch.getQuery()})`)
             .orWhere(`book.id  IN (${authorMatch.getQuery()})`)
             .orWhere(`book.id IN (${genreMatch.getQuery()})`)
-            .setParameters({ keyword: `%${keyword}%` })
-            .getMany();
+            .orWhere(`book.id IN (${creatorMatch.getQuery()})`)
+            .setParameters({ keyword: `%${keyword}%` });
 
-        return books;
+        const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
+
+        return {
+            data: data.map((item) => new BookResponseDto(item)),
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages
+            }
+        }
     }
 
     /**
@@ -351,13 +369,8 @@ export class BookService {
         // TS considers the sortDir as a string, so we need to cast it to 'ASC' | 'DESC' to avoid errors
 
         // #Pagination
-        const skip = (page - 1) * limit;
-        const [data, total] = await bookQuery
-            .skip(skip)
-            .take(limit)
-            .getManyAndCount();
+        const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
 
-        const totalPages = Math.ceil(total / limit);
         return {
             data: data.map((item) => new BookResponseDto(item)),
             meta: {
@@ -368,4 +381,25 @@ export class BookService {
             }
         }
     }
+
+    /**
+     * Get paginated books
+     * @param bookQuery The query builder object for book
+     * @param page The page number
+     * @param limit The number of items per page
+     * @returns An array of paginated data, total items, and total pages
+     */
+    private async getPaginatedBooks(bookQuery: SelectQueryBuilder<Book>, page, limit)
+        : Promise<[Book[], number, number]> {
+
+        const skip = (page - 1) * limit;
+        const [data, total] = await bookQuery
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
+
+        const totalPages = Math.ceil(total / limit);
+        return [data, total, totalPages];
+    }
+
 }
