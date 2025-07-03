@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { join } from 'path';
 
 async function bootstrap() {
@@ -14,6 +14,12 @@ async function bootstrap() {
 
   app.setViewEngine('ejs');
   app.setBaseViewsDir(join(__dirname, '../../', 'views'));
+
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector), {
+      excludeExtraneousValues: true,
+    }),
+  );
 
   await app.listen(process.env.PORT ?? 3000);
 }

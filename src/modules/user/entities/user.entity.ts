@@ -3,6 +3,7 @@ import {
     PrimaryGeneratedColumn,
     Column,
     ManyToMany,
+    OneToMany,
     JoinTable,
     Unique,
     CreateDateColumn,
@@ -48,6 +49,9 @@ export class User {
         },
     })
     readBooks: Book[];
+
+    @OneToMany(() => Book, (book) => book.creator)
+    books: Book[];
 
     //#endregion
 

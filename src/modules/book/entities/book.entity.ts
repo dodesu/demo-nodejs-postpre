@@ -51,4 +51,8 @@ export class Book {
 
     @ManyToMany(() => User, (user) => user.readBooks)
     readers: User[];
+
+    @ManyToOne(() => User, (user) => user.books)
+    @JoinColumn({ name: 'creator_id' })
+    creator: User;
 }

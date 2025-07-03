@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In, DataSource, ILike } from 'typeorm';
 import { Book } from './entities/book.entity';
@@ -7,6 +7,8 @@ import { Genre } from '../genre/entities/genre.entity';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SearchBookDto } from './dto/search-book.dto';
+import { BookResponseDto } from './dto/book-response.dto';
+import { SelectQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class BookService {
@@ -23,14 +25,25 @@ export class BookService {
         private readonly dataSource: DataSource,
     ) { }
 
-    async getAll() {
-        return this.bookRepository.find({ relations: ['author', 'genres'] });
+    async getAll(user) {
+        const books = await this.bookRepository.find({
+            relations: ['author', 'genres', 'creator', 'readers'],
+            order: {
+                id: 'ASC', //may should be created_at
+            },
+        });
+
+        if (user) {
+            return books.map((b) => new BookResponseDto(b, user.id));
+        }
+
+        return books.map((b) => new BookResponseDto(b));
     }
 
-    async getById(id: number) {
+    async getById(id: number, user) {
         const book = await this.bookRepository.findOne({
             where: { id },
-            relations: ['author', 'genres'],
+            relations: ['author', 'genres', 'creator'],
             order: {
                 id: 'ASC'
             }
@@ -40,7 +53,10 @@ export class BookService {
             throw new NotFoundException(`Book with id ${id} not found`);
         }
 
-        return book;
+        if (user) {
+            return new BookResponseDto(book, user.id);
+        }
+        return new BookResponseDto(book);
     }
 
     /**
@@ -56,7 +72,8 @@ export class BookService {
      * 
      * @returns The newly created book entity.
      */
-    async create(dto: CreateBookDto) {
+    async create(dto: CreateBookDto, user) {
+        // note: think about validate a user if others use this service
         const { title, authorId, genreIds, publishedAt } = dto;
 
         const author = await this.authorRepository.findOneBy({ id: authorId });
@@ -67,15 +84,17 @@ export class BookService {
         });
         this.validateGenreIdsOrThrow(genreIds || [], genres);
 
-
         const book = this.bookRepository.create({
             title,
             author,
             genres,
-            publishedAt: publishedAt ? new Date(publishedAt) : undefined
+            publishedAt: publishedAt ? new Date(publishedAt) : undefined,
+            creator: user
         });
 
-        return this.bookRepository.save(book);
+        const bookSaved = await this.bookRepository.save(book);
+
+        return new BookResponseDto(bookSaved);
     }
 
     /**
@@ -92,7 +111,7 @@ export class BookService {
      * 
      * @returns The updated book entity.
      */
-    async update(id: number, dto: UpdateBookDto) {
+    async update(id: number, dto: UpdateBookDto, user) {
         const { title, authorId, genreIds, publishedAt } = dto;
 
         //#Start transaction
@@ -103,10 +122,15 @@ export class BookService {
         try {
             const bookInTx = await queryRunner.manager.findOne(Book, {
                 where: { id },
-                relations: ['author', 'genres'],
+                relations: ['author', 'genres', 'creator'],
             });
+
             if (!bookInTx) {
                 throw new NotFoundException(`Book with id ${id} not found`);
+            }
+
+            if (bookInTx.creator.id !== user.id) {
+                throw new ForbiddenException(`You are not allowed to update this book`);
             }
 
             // #Updating
@@ -141,7 +165,8 @@ export class BookService {
 
             const saved = await queryRunner.manager.save(bookInTx);
             await queryRunner.commitTransaction();
-            return saved;
+
+            return new BookResponseDto(saved);
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
@@ -167,13 +192,37 @@ export class BookService {
         }
     }
 
-    async delete(id: number) {
+    async delete(id: number, user) {
+        const isAllowed = await this.isCreatorOfBook(id, user.id);
+        if (!isAllowed) {
+            throw new ForbiddenException(`You are not allowed to delete this book`);
+        }
+
         const result = await this.bookRepository.delete(id);
 
         if (result.affected === 0) {
             throw new NotFoundException(`Book with id ${id} not found`);
+            //this probably never happened, should be above isCreatorOfBook
+            // but placed it here temporarily
         }
     }
+
+    /**
+     * Checks if the user is the creator of the book with the given ID.
+     * If userId or bookId not exist always return false
+     */
+    private async isCreatorOfBook(bookId: number, userId: number) {
+        const book = await this.bookRepository.findOne({
+            where: { id: bookId },
+            relations: ['creator'],
+        });
+        if (book?.creator.id === userId) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Searches for books by keyword in their title, author's name, or genres' names.
@@ -184,7 +233,7 @@ export class BookService {
      * @returns An array of book entities matching the search criteria.
      */
     async search(dto: SearchBookDto) {
-        const { keyword } = dto;
+        const { keyword, page, limit } = dto;
 
         // # Subquery
 
@@ -205,19 +254,36 @@ export class BookService {
             .select('book.id')
             .where('book.title ILIKE :keyword');
 
+        const creatorMatch = this.bookRepository
+            .createQueryBuilder('book')
+            .leftJoin('book.creator', 'creator')
+            .select('book.id')
+            .where('creator.username ILIKE :keyword');
+
         // # Main query
 
-        const books = await this.bookRepository
+        const bookQuery = await this.bookRepository
             .createQueryBuilder("book")
             .leftJoinAndSelect("book.author", "author")
             .leftJoinAndSelect("book.genres", "genre")
+            .leftJoinAndSelect("book.creator", "creator")
             .where(`book.id IN (${titleMatch.getQuery()})`)
             .orWhere(`book.id  IN (${authorMatch.getQuery()})`)
             .orWhere(`book.id IN (${genreMatch.getQuery()})`)
-            .setParameters({ keyword: `%${keyword}%` })
-            .getMany();
+            .orWhere(`book.id IN (${creatorMatch.getQuery()})`)
+            .setParameters({ keyword: `%${keyword}%` });
 
-        return books;
+        const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
+
+        return {
+            data: data.map((item) => new BookResponseDto(item)),
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages
+            }
+        }
     }
 
     /**
@@ -241,6 +307,7 @@ export class BookService {
             title,
             authorId,
             genreIds,
+            creatorName,
             publishedFrom,
             publishedTo,
             sort = 'title_asc',
@@ -251,6 +318,7 @@ export class BookService {
         const whereClauses = {
             title: `book.title ILIKE :title`,
             author: `author.id = :authorId`,
+            creator: `creator.username ILIKE :name`,
             genres: `genres.id IN (:...genreIds)`,
             published: `book.publishedAt BETWEEN :from AND :to`
         };
@@ -258,6 +326,7 @@ export class BookService {
         const bookQuery = this.bookRepository.createQueryBuilder('book')
             .leftJoinAndSelect('book.author', 'author')
             .leftJoinAndSelect('book.genres', 'genres')
+            .leftJoinAndSelect('book.creator', 'creator')
             .where('1 = 1');
         // Add a dummy WHERE clause to allow chaining .andWhere() without checking if it's the first condition
 
@@ -269,6 +338,10 @@ export class BookService {
 
         if (authorId) {
             bookQuery.andWhere(whereClauses.author, { authorId });
+        }
+
+        if (creatorName) {
+            bookQuery.andWhere(whereClauses.creator, { name: `%${creatorName}%` });
         }
 
         if (genreIds?.length) {
@@ -303,16 +376,10 @@ export class BookService {
         // TS considers the sortDir as a string, so we need to cast it to 'ASC' | 'DESC' to avoid errors
 
         // #Pagination
-        const skip = (page - 1) * limit;
-        const [data, total] = await bookQuery
-            .skip(skip)
-            .take(limit)
-            .getManyAndCount();
-
-        const totalPages = Math.ceil(total / limit);
+        const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
 
         return {
-            data,
+            data: data.map((item) => new BookResponseDto(item)),
             meta: {
                 total,
                 page,
@@ -321,4 +388,25 @@ export class BookService {
             }
         }
     }
+
+    /**
+     * Get paginated books
+     * @param bookQuery The query builder object for book
+     * @param page The page number
+     * @param limit The number of items per page
+     * @returns An array of paginated data, total items, and total pages
+     */
+    private async getPaginatedBooks(bookQuery: SelectQueryBuilder<Book>, page, limit)
+        : Promise<[Book[], number, number]> {
+
+        const skip = (page - 1) * limit;
+        const [data, total] = await bookQuery
+            .skip(skip)
+            .take(limit)
+            .getManyAndCount();
+
+        const totalPages = Math.ceil(total / limit);
+        return [data, total, totalPages];
+    }
+
 }
