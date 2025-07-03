@@ -25,18 +25,22 @@ export class BookService {
         private readonly dataSource: DataSource,
     ) { }
 
-    async getAll() {
+    async getAll(user) {
         const books = await this.bookRepository.find({
-            relations: ['author', 'genres', 'creator'],
+            relations: ['author', 'genres', 'creator', 'readers'],
             order: {
-                id: 'ASC',
+                id: 'ASC', //may should be created_at
             },
         });
+
+        if (user) {
+            return books.map((b) => new BookResponseDto(b, user.id));
+        }
 
         return books.map((b) => new BookResponseDto(b));
     }
 
-    async getById(id: number) {
+    async getById(id: number, user) {
         const book = await this.bookRepository.findOne({
             where: { id },
             relations: ['author', 'genres', 'creator'],
@@ -49,6 +53,9 @@ export class BookService {
             throw new NotFoundException(`Book with id ${id} not found`);
         }
 
+        if (user) {
+            return new BookResponseDto(book, user.id);
+        }
         return new BookResponseDto(book);
     }
 

@@ -32,7 +32,11 @@ export class BookResponseDto {
     @Type(() => UserInBookDto)
     creator: UserInBookDto;
 
-    constructor(book: Book) {
+    @Expose()
+    @Type(() => Boolean)
+    isRead: boolean;
+
+    constructor(book: Book, currentUserId?: number) {
         this.id = book.id;
         this.title = book.title;
         this.publishedAt = book.publishedAt;
@@ -41,5 +45,9 @@ export class BookResponseDto {
         this.genres = book.genres?.map((g) => new GenreResponseDto(g)) ?? [];
         this.creator = new UserInBookDto(book.creator);
         //notes: idk why if author/genres not use dto, it will undefined (in JSON response).
+
+        if (currentUserId) {
+            this.isRead = !!book.readers?.some((reader) => reader.id === currentUserId);
+        }
     }
 }
