@@ -2,11 +2,14 @@ import {
     Controller,
     Param, Body,
     Get, Post, Patch, Delete,
-    HttpCode
+    HttpCode,
+    UseGuards
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -37,4 +40,17 @@ export class UserController {
     delete(@Param('id') id: number) {
         return this.userService.delete(id);
     }
+
+    // @UseGuards(AuthGuard('jwt'))
+    @Get('/:id/read-books')
+    getUserBooks(@Param('id') userId: number) {
+        return this.userService.getReadBooks(userId);
+    }
+
+    @Post('/:id/read-books')
+    @UseGuards(AuthGuard('jwt'))
+    addReadBooks(@Body('bookId') bookId: any, @CurrentUser() user) {
+        return this.userService.addReadBooks(bookId, user);
+    }
+
 }
