@@ -3,7 +3,8 @@ import {
     Param, Body,
     Get, Post, Patch, Delete,
     HttpCode,
-    UseGuards
+    UseGuards,
+    ForbiddenException
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -49,7 +50,11 @@ export class UserController {
 
     @Post('/:id/read-books')
     @UseGuards(AuthGuard('jwt'))
-    addReadBooks(@Body('bookId') bookId: any, @CurrentUser() user) {
+    addReadBooks(@Body('bookId') bookId: number, @Param('id') userId: number, @CurrentUser() user) {
+        if (userId !== user.id) {
+            throw new ForbiddenException(`You cannot modify another user's read books`);
+        }
+
         return this.userService.addReadBooks(bookId, user);
     }
 
