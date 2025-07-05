@@ -166,4 +166,17 @@ export class UserService {
 
         return new BookResponseDto(book);
     }
+
+    async removeBookFromReadList(bookId, user) {
+        const book = await this.bookRepository.findOneById(bookId);
+        if (!book) {
+            throw new NotFoundException(`Book with id:${bookId} not found`);
+        }
+
+        return this.userRepository
+            .createQueryBuilder()
+            .relation('readBooks')
+            .of(user.id)
+            .remove(bookId);
+    }
 }
