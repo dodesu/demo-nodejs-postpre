@@ -5,12 +5,17 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { BookResponseDto } from '../book/dto/book-response.dto';
+import { Book } from '../book/entities/book.entity';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
-        private readonly userRepository: Repository<User>
+        private readonly userRepository: Repository<User>,
+
+        @InjectRepository(Book)
+        private bookRepository: Repository<Book>,
     ) { }
 
     getAll() {
@@ -115,5 +120,63 @@ export class UserService {
         if (result.affected === 0) {
             throw new NotFoundException(`User with id ${id} not found`);
         }
+    }
+
+    async getReadBooks(userId: number) {
+        const user = await this.userRepository.findOne({
+            where: { id: userId },
+            relations:
+                ['readBooks',
+                    'readBooks.author',
+                    'readBooks.genres',
+                    'readBooks.creator',]
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return user.readBooks.map((b) => new BookResponseDto(b));
+    }
+
+    async addReadBooks(bookId, user) {
+        const book = await this.bookRepository.findOne({
+            where: { id: bookId },
+            relations: ['author', 'genres', 'creator'],
+        });
+        if (!book) {
+            throw new NotFoundException(`Book with id:${bookId} not found`);
+        }
+
+        const currentUser = await this.userRepository.findOne({
+            where: { id: user.id },
+            relations: ['readBooks'],
+        }); //No need to check userId exists, cuz use auth guard
+        const isReadBook = currentUser?.readBooks.some((b) => b.id === bookId);
+
+        if (isReadBook) {
+            throw new ConflictException('Book already marked as read');
+        }
+        //mark book as read
+        await this.userRepository
+            .createQueryBuilder()
+            .relation('readBooks')
+            .of(user.id)
+            .add(bookId);
+
+        return new BookResponseDto(book);
+    }
+
+    async removeBookFromReadList(bookId, user) {
+        const book = await this.bookRepository.findOneById(bookId);
+        if (!book) {
+            throw new NotFoundException(`Book with id:${bookId} not found`);
+        }
+
+        return this.userRepository
+            .createQueryBuilder()
+            .relation('readBooks')
+            .of(user.id)
+            .remove(bookId);
     }
 }

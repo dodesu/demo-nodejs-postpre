@@ -2,11 +2,15 @@ import {
     Controller,
     Param, Body,
     Get, Post, Patch, Delete,
-    HttpCode
+    HttpCode,
+    UseGuards,
+    ForbiddenException
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 
 @Controller('users')
 export class UserController {
@@ -37,4 +41,32 @@ export class UserController {
     delete(@Param('id') id: number) {
         return this.userService.delete(id);
     }
+
+    // @UseGuards(AuthGuard('jwt'))
+    @Get('/:id/read-books')
+    getUserBooks(@Param('id') userId: number) {
+        return this.userService.getReadBooks(userId);
+    }
+
+    @Post('/:id/read-books')
+    @UseGuards(AuthGuard('jwt'))
+    addReadBooks(@Body('bookId') bookId: number, @Param('id') userId: number, @CurrentUser() user) {
+        if (userId !== user.id) {
+            throw new ForbiddenException(`You cannot modify another user's read books`);
+        }
+
+        return this.userService.addReadBooks(bookId, user);
+    }
+
+    @Delete('/:id/read-books/:bookId')
+    @HttpCode(204)
+    @UseGuards(AuthGuard('jwt'))
+    removeBookFromReadList(@Param('bookId') bookId: number, @Param('id') userId: number, @CurrentUser() user) {
+        if (userId !== user.id) {
+            throw new ForbiddenException(`You cannot modify another user's read books`);
+        }
+
+        return this.userService.removeBookFromReadList(bookId, user);
+    }
+
 }
