@@ -9,6 +9,7 @@ import { GenreModule } from './modules/genre/genre.module';
 import databaseConfig from './config/database.config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ViewModule } from './modules/view/view.module';
 
 @Module({
   imports: [
@@ -19,7 +20,7 @@ import { join } from 'path';
     }),
 
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
+      rootPath: join(__dirname, '../../', 'public'),
       serveRoot: '/assets',
     }),
 
@@ -51,6 +52,8 @@ import { join } from 'path';
     AuthorModule,
 
     GenreModule,
+
+    ViewModule,
   ]
 })
 export class AppModule { }

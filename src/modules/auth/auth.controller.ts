@@ -10,7 +10,6 @@ export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
     @Post('register')
-    @Render('home')
     register(@Body() dto: RegisterDto) {
         return this.authService.register(dto);
     }
