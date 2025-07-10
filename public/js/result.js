@@ -1,3 +1,5 @@
+const { renderBooks } = await import('/assets/js/books.js');
+
 const UI = {
     toggleBtn: document.getElementById('toggle-advanced'),
     advancedSearch: document.getElementById('advanced-search'),
@@ -62,8 +64,15 @@ const submit = async () => {
 
     const result = await fetchSearchAdvanced(title, authorId, creatorName, genreIds, publishedFrom, publishedTo);
 
-    renderBooks(result.data, result.meta);
+    renderBooks(result.data);
+    updateMeta(result.meta);
 }
+
+const updateMeta = (meta) => {
+    const { resultCount } = UI;
+    resultCount.textContent = `Tìm thấy ${meta.total} sách`;
+}
+
 const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publishedFrom, publishedTo) => {
     try {
         let params = '';
@@ -82,30 +91,6 @@ const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publi
     } catch (error) {
         console.error(error);
     }
-}
-
-const renderBooks = (books, meta) => {
-    const { bodyTable, resultCount, table } = UI;
-
-    bodyTable.innerHTML = '';
-    table.classList.remove('hidden');
-    books?.forEach(book => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${book.id}</td>
-            <td>${book.title}</td>
-            <td>${new Date(book.publishedAt).toLocaleDateString()}</td>
-            <td>${new Date(book.createdAt).toLocaleDateString()}</td>
-            <td>${book.author.name}</td>
-            <td>${book.genres.map(g => g.name).join(', ')}</td>
-            <td>${book.creator.name}</td>
-            <td><input type="checkbox" ></td>
-        `;
-
-        bodyTable.appendChild(row);
-    })
-    resultCount.textContent = `Tìm thấy ${meta.total} sách`;
-
 }
 
 const isAllEmpty = (formEl) => {

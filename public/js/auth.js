@@ -1,6 +1,8 @@
+const { renderBooks } = await import('/assets/js/books.js');
+
 const UI = {
     LoginBtn: document.getElementById('login-button'),
-    AuthBtns: document.querySelector('.auth-buttons'),
+    AuthBtns: document.querySelector('.auth-buttons')
 }
 
 const init = () => {
@@ -162,6 +164,7 @@ const initUser = async () => {
     const user = await getCurrentUser();
     if (user) {
         createProfile(user.username);
+        await updateBooksView();
     }
     document.body.classList.remove('hidden');
 }
@@ -183,7 +186,7 @@ const getCurrentUser = async () => {
 
         const user = await response.json();
         return user;
-    } catch { }
+    } catch { return null; }
 }
 const createProfile = (username) => {
     const { AuthBtns } = UI;
@@ -208,6 +211,27 @@ const createProfile = (username) => {
 
     AuthBtns.appendChild(span);
     AuthBtns.appendChild(logout);
+}
+
+const updateBooksView = async () => {
+    try {
+        const response = await fetch('/books', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const books = await response.json();
+        renderBooks(books);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 init();

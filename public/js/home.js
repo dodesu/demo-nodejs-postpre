@@ -2,6 +2,7 @@ const UI = {
     SearchBox: document.getElementById("search-box"),
     SearchInput: document.querySelector('.search-box input'),
     BodyBookTable: document.getElementById("books-table"),
+    Table: document.querySelector('.responsive-table')
 };
 
 const init = () => {
