@@ -19,6 +19,7 @@ export class ViewController {
         private readonly authorService: AuthorService
     ) { }
 
+    @Get()
     @Get('home')
     @Render('home')
     @UseGuards(OptionalJwtAuthGuard)
