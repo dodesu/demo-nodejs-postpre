@@ -94,12 +94,15 @@ const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publi
 }
 
 const isAllEmpty = (formEl) => {
-    const inputs = formEl.querySelectorAll('input');
+    const inputs = formEl.querySelectorAll('input, select');
 
     return Array.from(inputs).every(input => {
         if (input.type === 'checkbox') {
             return !input.checked;
-        } else {
+        } if (input.type === 'select-one') {
+            return input.selectedIndex === 0;
+        }
+        else {
             return input.value.trim() === '';
         }
     });
