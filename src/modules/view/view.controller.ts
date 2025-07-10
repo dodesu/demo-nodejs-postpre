@@ -19,13 +19,12 @@ export class ViewController {
         private readonly authorService: AuthorService
     ) { }
 
-    @Get()
-    @Get('home')
+    @Get(['', 'home'])
     @Render('home')
-    @UseGuards(OptionalJwtAuthGuard)
-    async home(@CurrentUser() user) {
-
-        return { books: await this.bookService.getAll(user) };
+    async home() {
+        return {
+            books: await this.bookService.getAll()
+        };
     }
 
     @Get('result')
@@ -42,7 +41,11 @@ export class ViewController {
 
         const genres = await this.genreService.getAll();
         const authors = await this.authorService.getAll();
-        return { result: result, genres: genres, authors: authors };
+        return {
+            result: result,
+            genres: genres,
+            authors: authors
+        };
     }
 
 

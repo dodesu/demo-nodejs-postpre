@@ -25,7 +25,7 @@ export class BookService {
         private readonly dataSource: DataSource,
     ) { }
 
-    async getAll(user) {
+    async getAll(user?) {
         const books = await this.bookRepository.find({
             relations: ['author', 'genres', 'creator', 'readers'],
             order: {

@@ -1,32 +1,34 @@
 const UI = {
     LoginBtn: document.getElementById('login-button'),
+    AuthBtns: document.querySelector('.auth-buttons'),
 }
 
 const init = () => {
-    clickLoginBtn()
+    initUser();
+    clickLoginBtn();
 };
 const clickLoginBtn = () => {
     const { LoginBtn } = UI;
-    LoginBtn.addEventListener('click', createLoginModal);
+    LoginBtn.addEventListener('click', createLoginModel);
 }
-function createLoginModal() {
-    // Base element modal
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-    modal.style.display = 'flex';
-    modal.style.justifyContent = 'center';
-    modal.style.alignItems = 'center';
-    modal.style.zIndex = '1000';
+async function createLoginModel() {
+    // Base element model
+    const model = document.createElement('div');
+    model.style.position = 'fixed';
+    model.style.top = '0';
+    model.style.left = '0';
+    model.style.width = '100%';
+    model.style.height = '100%';
+    model.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    model.style.display = 'flex';
+    model.style.justifyContent = 'center';
+    model.style.alignItems = 'center';
+    model.style.zIndex = '1000';
 
-    // Close modal
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
+    // Close model
+    model.addEventListener('click', (e) => {
+        if (e.target === model) {
+            model.remove();
         }
     });
 
@@ -51,7 +53,7 @@ function createLoginModal() {
     close.style.color = '#ccc';
     close.onmouseover = () => close.style.color = '#fff';
     close.onmouseleave = () => close.style.color = '#ccc';
-    close.onclick = () => modal.remove();
+    close.onclick = () => model.remove();
 
     // Title
     const title = document.createElement('h2');
@@ -62,13 +64,17 @@ function createLoginModal() {
 
     // Form
     const form = document.createElement('form');
-    form.onsubmit = function (e) {
+    form.onsubmit = async function (e) {
         e.preventDefault();
         const usernameOrEmail = form.querySelector('#usernameOrEmail').value;
         const pass = form.querySelector('#password').value;
-        console.log("Đăng nhập với:", usernameOrEmail, pass);
-        alert('Đăng nhập thành công (demo)');
-        modal.remove();
+        if (await login(usernameOrEmail, pass)) {
+            alert('Đăng nhập thành công');
+            await initUser();
+        } else {
+            alert('Đăng nhập thất bại');
+        }
+        model.remove();
     };
 
     const group = (labelText, inputType, inputId) => {
@@ -117,10 +123,91 @@ function createLoginModal() {
     content.appendChild(close);
     content.appendChild(title);
     content.appendChild(form);
-    modal.appendChild(content);
+    model.appendChild(content);
 
     // Add to body
-    document.body.appendChild(modal);
+    document.body.appendChild(model);
+}
+async function login(usernameOrEmail, password) {
+    try {
+        const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                usernameOrEmail: usernameOrEmail,
+                password: password
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message);
+        }
+
+        const data = await response.json();
+        const token = data.access_token;
+
+        localStorage.setItem('access_token', token);
+
+        return true;
+    } catch (err) {
+        console.error('Lỗi khi đăng nhập:', err.message);
+        return false;
+    }
+}
+
+const initUser = async () => {
+    const user = await getCurrentUser();
+    if (user) {
+        createProfile(user.username);
+    }
+    document.body.classList.remove('hidden');
+}
+
+const getCurrentUser = async () => {
+    try {
+        const response = await fetch('/auth/profile', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+
+        const user = await response.json();
+        return user;
+    } catch { }
+}
+const createProfile = (username) => {
+    const { AuthBtns } = UI;
+    AuthBtns.innerHTML = '';
+
+    const span = document.createElement('span');
+    span.innerText = username;
+
+    const logout = document.createElement('button');
+    logout.innerText = 'Đăng xuất';
+    logout.style.backgroundColor = '#333';
+    logout.style.color = '#fff';
+    logout.style.border = 'none';
+    logout.style.borderRadius = '5px';
+    logout.style.cursor = 'pointer';
+    logout.onmouseover = () => logout.style.backgroundColor = '#444';
+    logout.onmouseleave = () => logout.style.backgroundColor = '#333';
+    logout.onclick = () => {
+        localStorage.removeItem('access_token');
+        location.reload();
+    };
+
+    AuthBtns.appendChild(span);
+    AuthBtns.appendChild(logout);
 }
 
 init();
