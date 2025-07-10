@@ -27,12 +27,20 @@
             <form id="filter-form">
                 <div>
                     <label for="author">Tác giả:</label>
-                    <input type="text" id="author" name="author">
+                    <select name="authorId" id="author-select">
+                        <option value=""> --- Tác giả --- </option>
+                        <% authors.forEach(author=> { %>
+                            <option value="<%= author.id %>">
+                                <%= author.name %>
+                            </option>
+                            <% }) %>
+                    </select>
                 </div>
                 <div>
-                    <label for="genre">Thể loại:</label>
-                    <input type="text" id="genre" name="genre">
+                    <label for="creator">Người tạo:</label>
+                    <input type="text" id="creator" name="creatorName">
                 </div>
+                <label for="published" class="full-row">Xuất bản:</label>
                 <div>
                     <label for="published-from">Từ ngày:</label>
                     <input type="date" id="published-from" name="publishedFrom">
@@ -41,60 +49,69 @@
                     <label for="published-to">Đến ngày:</label>
                     <input type="date" id="published-to" name="publishedTo">
                 </div>
-                <button type="submit">Lọc</button>
+                <div class="genre-group full-row">
+                    <label>Thể loại:</label>
+                    <div class="genre-options">
+                        <% genres.forEach(genre=> { %>
+                            <label><input type="checkbox" name="genreIds" value="<%= genre.id %>">
+                                <%= genre.name %>
+                            </label>
+                            <% }) %>
+                    </div>
+                </div>
+                <button type="button" class="full-row" id="submit-button">Lọc</button>
             </form>
         </div>
 
-        <h3>Tìm thấy <%= meta.total %> sách</h3>
+        <h3 id="result-count">Tìm thấy <%= meta.total %> sách</h3>
 
-        <% if (meta.total !==0) { %>
-            <table class="responsive-table">
-                <thead>
+
+        <table class="responsive-table<%= meta.total === 0 ? " hidden" : "" %>">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Published</th>
+                    <th>Created At</th>
+                    <th>Author</th>
+                    <th>Genres</th>
+                    <th>Creator</th>
+                    <th>Is Read</th>
+                </tr>
+            </thead>
+            <tbody id="books-table">
+                <% books.forEach(book=> { %>
                     <tr>
-                        <th>ID</th>
-                        <th>Title</th>
-                        <th>Published</th>
-                        <th>Created At</th>
-                        <th>Author</th>
-                        <th>Genres</th>
-                        <th>Creator</th>
-                        <th>Is Read</th>
+                        <td>
+                            <%= book.id %>
+                        </td>
+                        <td>
+                            <%= book.title %>
+                        </td>
+                        <td>
+                            <%= new Date(book.publishedAt).toLocaleDateString() %>
+                        </td>
+                        <td>
+                            <%= new Date(book.createdAt).toLocaleDateString() %>
+                        </td>
+                        <td>
+                            <%= book.author.name %>
+                        </td>
+                        <td>
+                            <%= book.genres.map((g)=> g.name).join(', ') %>
+                        </td>
+                        <td>
+                            <%= book.creator.name %>
+                        </td>
+                        <td>
+                            <input type="checkbox">
+                        </td>
                     </tr>
-                </thead>
-                <tbody id="books-table">
-                    <% books.forEach(book=> { %>
-                        <tr>
-                            <td>
-                                <%= book.id %>
-                            </td>
-                            <td>
-                                <%= book.title %>
-                            </td>
-                            <td>
-                                <%= new Date(book.publishedAt).toLocaleDateString() %>
-                            </td>
-                            <td>
-                                <%= new Date(book.createdAt).toLocaleDateString() %>
-                            </td>
-                            <td>
-                                <%= book.author.name %>
-                            </td>
-                            <td>
-                                <%= book.genres.map((g)=> g.name).join(', ') %>
-                            </td>
-                            <td>
-                                <%= book.creator.name %>
-                            </td>
-                            <td>
-                                <input type="checkbox" checked>
-                            </td>
-                        </tr>
-                        <% }) %>
-                </tbody>
-            </table>
-            <% } %>
+                    <% }) %>
+            </tbody>
+        </table>
 
-                <script src="/assets/js/result.js"></script>
+        <script src="/assets/js/result.js"></script>
 </body>
 
 </html>
