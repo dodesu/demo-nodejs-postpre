@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo Book</title>
+    <link rel="stylesheet" href="/assets/css/add-new-book.css">
+</head>
+
+<body>
+    <form onsubmit="return false;">
+        <h2>Tạo sách mới</h2>
+
+        <label for="title">Tiêu đề</label>
+        <input type="text" id="title" name="title" required />
+
+        <label for="author">Tác giả</label>
+        <select id="author" name="authorId">
+            <option value="1">Nguyễn Nhật Ánh</option>
+            <option value="2">J.K. Rowling</option>
+            <option value="3">George Orwell</option>
+        </select>
+        <div class="add-new">
+            <input type="text" id="new-author" placeholder="Tên tác giả mới" style="display:none;" />
+            <button type="button" id="new-author-button" onclick="toggleInput('new-author')">Thêm mới</button>
+        </div>
+
+        <label>Thể loại</label>
+        <div class="checkbox-group" id="genres">
+            <label><input type="checkbox" name="genreIds" value="1"> Giả tưởng</label>
+            <label><input type="checkbox" name="genreIds" value="2"> Lãng mạn</label>
+            <label><input type="checkbox" name="genreIds" value="3"> Kinh dị</label>
+        </div>
+        <div class="add-new">
+            <input type="text" id="new-genre" placeholder="Tên thể loại mới" style="display:none;" />
+            <button type="button" id="new-genre-button" onclick="toggleInput('new-genre')">Thêm mới</button>
+        </div>
+
+        <label for="publishedAt">Ngày xuất bản</label>
+        <input type="date" id="publishedAt" name="publishedAt" />
+
+        <label>
+            <input type="checkbox" id="isRead" name="isRead" />
+            Đã đọc
+        </label>
+
+        <div style="margin-top: 1.5rem;">
+            <button type="submit">Lưu sách</button>
+        </div>
+    </form>
+    <script type="module" src="/assets/js/add-new-book.js"></script>
+</body>
+
+</html>

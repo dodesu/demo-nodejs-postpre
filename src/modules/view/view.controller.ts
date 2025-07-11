@@ -29,8 +29,7 @@ export class ViewController {
 
     @Get('result')
     @Render('result')
-    @UseGuards(OptionalJwtAuthGuard)
-    async result(@Query() dto: SearchBookDto, @CurrentUser() user) {
+    async result(@Query() dto: SearchBookDto) {
         const { keyword } = dto;
         let result;
         if (keyword) {
@@ -48,5 +47,10 @@ export class ViewController {
         };
     }
 
+    @Get('add-new-book')
+    @Render('add-new-book')
+    async addNewBook() {
+        return {};
+    }
 
 }
