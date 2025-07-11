@@ -50,7 +50,12 @@ export class ViewController {
     @Get('add-new-book')
     @Render('add-new-book')
     async addNewBook() {
-        return {};
+        const genres = await this.genreService.getAll();
+        const authors = await this.authorService.getAll();
+        return {
+            authors: authors,
+            genres: genres
+        };
     }
 
 }
