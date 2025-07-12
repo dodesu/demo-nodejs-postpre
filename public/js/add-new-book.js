@@ -5,6 +5,10 @@ const UI = {
     NewGenreBtn: document.getElementById('new-genre-button'),
     SubmitBtn: document.getElementById('submit-button')
 }
+const RESOURCE_URLS = {
+    'new-author': '/authors',
+    'new-genre': '/genres'
+}
 let isSetEventInput = {
     'new-author': false,
     'new-genre': false
@@ -22,10 +26,13 @@ const toggleInput = async (id) => {
     const value = input.value.trim();
     const adds = {
         'new-author': async (name) => {
-            const newAuthor = await fetchAddAuthor(name);
+            const newAuthor = await fetchAddItem(RESOURCE_URLS['new-author'], name);
             addOptionAuthor(newAuthor);
         },
-        'new-genre': ''
+        'new-genre': async (name) => {
+            const newGenre = await fetchAddItem(RESOURCE_URLS['new-genre'], name);
+            addCheckboxGenre(newGenre);
+        }
     }
 
     if (input.style.display === "none") {
@@ -37,7 +44,7 @@ const toggleInput = async (id) => {
                 if (id === 'new-author') {
                     await adds['new-author'](value);
                 } else if (id === 'new-genre') {
-                    addCheckboxGenre(12, input.value);
+                    await adds['new-genre'](value);
                 }
             }
             input.value = "";
@@ -74,31 +81,57 @@ const addOptionAuthor = (newAuthor) => {
     select.value = option.value;
 }
 
-const addCheckboxGenre = (id, name) => {
+const addCheckboxGenre = (newGenre) => {
+    const { id, name } = newGenre;
     const group = document.getElementById('genres');
     const label = document.createElement('label');
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.name = 'genreIds';
-    checkbox.value = name;
+    checkbox.value = id;
     label.appendChild(checkbox);
-    label.append(" " + id);
+    label.append(" " + name);
     group.appendChild(label);
 }
 
-const fetchAddAuthor = async (name) => {
-    const newAuthor = {
-        name: name
-    };
-    console.log(name);
+const fetchAddItem = async (endpoint, name) => {
+    const payload = { name };
+
     try {
-        const response = await fetch('/authors', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
-            body: JSON.stringify(newAuthor)
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message);
+        }
+
+        const result = await response.json();
+
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
+
+const fetchAddGenre = async (name) => {
+    const newGenre = {
+        name: name
+    };
+    try {
+        const response = await fetch('/genres', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: JSON.stringify(newGenre)
         });
 
         if (!response.ok) {
