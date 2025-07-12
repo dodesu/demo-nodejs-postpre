@@ -19,49 +19,53 @@ const Init = () => {
 
 const toggleInput = async (id) => {
     const input = UI[id === 'new-author' ? 'AuthorInput' : 'GenreInput'];
+    const value = input.value.trim();
+    const adds = {
+        'new-author': async (name) => {
+            const newAuthor = await fetchAddAuthor(name);
+            addOptionAuthor(newAuthor);
+        },
+        'new-genre': ''
+    }
 
     if (input.style.display === "none") {
         input.style.display = "block";
         input.focus();
     } else {
-        if (input.value.trim()) {
-            if (id === 'new-author') {
-                addOptionAuthor(12, input.value);
-            } else if (id === 'new-genre') {
-                addCheckboxGenre(12, input.value);
+        try {
+            if (value) {
+                if (id === 'new-author') {
+                    await adds['new-author'](value);
+                } else if (id === 'new-genre') {
+                    addCheckboxGenre(12, input.value);
+                }
             }
             input.value = "";
             input.style.display = "none";
-        } else {
-            input.style.display = "none";
+        } catch (error) {
+            console.error(error);
+            alert(error.message);
         }
     }
 
     // ==== Set event input ====
     if (isSetEventInput[id]) return;
     isSetEventInput[id] = true;
-    input.addEventListener('keydown', e => {
+    input.addEventListener('keydown', async (e) => {
         if (e.key !== 'Enter') return;
-        const value = input.value.trim();
-        if (!value) return;
+        const name = input.value.trim();
+        if (!name) return;
 
-        const adds = {
-            'new-author': () => addOptionAuthor(12, value),
-            'new-genre': () => addCheckboxGenre(12, value)
-        };
-
-        if (adds[id]) {
-            adds[id]();
-        }
+        await adds[id](name);
 
         input.value = "";
         input.style.display = "none";
     });
     input.addEventListener('keydown', e => e.key === 'Escape' ? input.style.display = "none" : null);
-    input.addEventListener('blur', () => input.style.display = "none");
 }
 
-const addOptionAuthor = (id, name) => {
+const addOptionAuthor = (newAuthor) => {
+    const { id, name } = newAuthor;
     const select = document.getElementById('author');
     const option = document.createElement('option');
     option.text = name;
@@ -82,11 +86,11 @@ const addCheckboxGenre = (id, name) => {
     group.appendChild(label);
 }
 
-const createAuthor = async (name) => {
+const fetchAddAuthor = async (name) => {
     const newAuthor = {
         name: name
     };
-
+    console.log(name);
     try {
         const response = await fetch('/authors', {
             method: 'POST',
@@ -99,26 +103,23 @@ const createAuthor = async (name) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Lỗi khi tạo sách:', errorData);
-            alert(errorData.message);
-            return null;
+            throw new Error(errorData.message);
         }
 
         const result = await response.json();
+
         return result;
     } catch (error) {
-        console.error('Lỗi mạng hoặc máy chủ:', error);
-        alert(error.message);
-        return null;
+        throw error;
     }
 }
 
-const createBook = async () => {
+const createBook = async (title, authorId, genreIds, publishedAt) => {
     const newBook = {
-        title: "Umamusume: Pretty Derby",
-        authorId: 8,
-        genreIds: [2, 3, 4, 5, 6],
-        publishedAt: "2020-02-12"
+        title: title,
+        authorId: authorId,
+        genreIds: genreIds,
+        publishedAt: publishedAt
     };
 
     try {
