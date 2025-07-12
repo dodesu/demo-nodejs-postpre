@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <form onsubmit="return false;">
+    <form onsubmit="return false;" novalidate>
         <h2>Tạo sách mới</h2>
 
         <label for="title">Tiêu đề</label>
@@ -25,7 +25,7 @@
         </select>
         <div class="add-new">
             <input type="text" id="new-author" placeholder="Tên tác giả mới" style="display:none;" />
-            <button type="button" id="new-author-button" onclick="toggleInput('new-author')">Thêm mới</button>
+            <button type="button" id="new-author-button">Thêm mới</button>
         </div>
 
         <label>Thể loại</label>
@@ -38,7 +38,7 @@
         </div>
         <div class="add-new">
             <input type="text" id="new-genre" placeholder="Tên thể loại mới" style="display:none;" />
-            <button type="button" id="new-genre-button" onclick="toggleInput('new-genre')">Thêm mới</button>
+            <button type="button" id="new-genre-button">Thêm mới</button>
         </div>
 
         <label for="publishedAt">Ngày xuất bản</label>
@@ -50,7 +50,7 @@
         </label>
 
         <div style="margin-top: 1.5rem;">
-            <button type="submit">Lưu sách</button>
+            <button type="submit" id="submit-button">Lưu sách</button>
         </div>
     </form>
     <script type="module" src="/assets/js/add-new-book.js"></script>
