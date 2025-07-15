@@ -21,8 +21,13 @@ export const renderBooks = (books) => {
     BodyTable.innerHTML = '';
     Table.classList.remove('hidden');
     books?.forEach(book => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
+        renderBook(book, BodyTable);
+    })
+}
+
+export const renderBook = (book, BodyTableEl) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
             <td>${book.id}</td>
             <td>${book.title}</td>
             <td>${new Date(book.publishedAt).toLocaleDateString()}</td>
@@ -33,6 +38,5 @@ export const renderBooks = (books) => {
             <td><input type="checkbox" ${book.isRead ? 'checked' : ''}></td>
         `;
 
-        BodyTable.appendChild(row);
-    })
+    BodyTableEl.appendChild(row);
 }

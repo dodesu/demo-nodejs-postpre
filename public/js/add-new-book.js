@@ -1,9 +1,15 @@
+
+const { renderBook } = await import('/assets/js/books.js');
+
 const UI = {
     AuthorInput: document.getElementById('new-author'),
     GenreInput: document.getElementById('new-genre'),
     NewAuthorBtn: document.getElementById('new-author-button'),
     NewGenreBtn: document.getElementById('new-genre-button'),
-    SubmitBtn: document.getElementById('submit-button')
+    SubmitBtn: document.getElementById('submit-button'),
+    Form: document.querySelector('#book-form'),
+    Table: document.querySelector('.responsive-table'),
+    BodyTable: document.getElementById('books-table'),
 }
 const RESOURCE_URLS = {
     'new-author': '/authors',
@@ -15,10 +21,11 @@ let isSetEventInput = {
 };
 
 const Init = () => {
-    const { NewAuthorBtn, NewGenreBtn } = UI;
+    const { NewAuthorBtn, NewGenreBtn, SubmitBtn } = UI;
 
     NewAuthorBtn.addEventListener('click', () => toggleInput('new-author'));
     NewGenreBtn.addEventListener('click', () => toggleInput('new-genre'));
+    SubmitBtn.addEventListener('click', submit);
 }
 
 const toggleInput = async (id) => {
@@ -147,22 +154,46 @@ const fetchAddGenre = async (name) => {
     }
 }
 
-const createBook = async (title, authorId, genreIds, publishedAt) => {
-    const newBook = {
-        title: title,
-        authorId: authorId,
-        genreIds: genreIds,
-        publishedAt: publishedAt
-    };
+const submit = async () => {
+    const { Table, BodyTable } = UI;
+    const book = await fetchAddBook(getFormData());
+
+    Table.classList.remove('hidden');
+    renderBook(book, BodyTable);
+}
+const getFormData = () => {
+    const { Form } = UI;
+    const formData = {};
+
+    formData.title = Form.querySelector('#title').value.trim();
+
+    formData.authorId = Number(Form.querySelector('#author').value);
+
+    formData.genreIds = Array.from(Form.querySelectorAll('input[name="genreIds"]:checked'))
+        .map(cb => Number(cb.value));
+
+    formData.publishedAt = Form.querySelector('#publishedAt').value;
+
+    formData.isRead = Form.querySelector('#isRead').checked;
+
+    return formData;
+};
+const fetchAddBook = async (newBook) => {
+    const { title, authorId, genreIds, publishedAt } = newBook;
 
     try {
         const response = await fetch('/books', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}` // nếu có token
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
             },
-            body: JSON.stringify(newBook)
+            body: JSON.stringify({
+                title,
+                authorId,
+                genreIds,
+                publishedAt
+            })
         });
 
         if (!response.ok) {
@@ -172,9 +203,11 @@ const createBook = async (title, authorId, genreIds, publishedAt) => {
         }
 
         const result = await response.json();
-        console.log('Tạo sách thành công:', result);
+        alert('Thêm sách thành công');
+        return result;
     } catch (error) {
         console.error('Lỗi mạng hoặc máy chủ:', error);
+        return null;
     }
 };
 

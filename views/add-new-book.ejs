@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <form onsubmit="return false;" novalidate>
+    <form onsubmit="return false;" novalidate id="book-form">
         <h2>Tạo sách mới</h2>
 
         <label for="title">Tiêu đề</label>
@@ -53,6 +53,21 @@
             <button type="submit" id="submit-button">Lưu sách</button>
         </div>
     </form>
+    <table class="responsive-table hidden">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Published</th>
+                <th>Created At</th>
+                <th>Author</th>
+                <th>Genres</th>
+                <th>Creator</th>
+                <th>Is Read</th>
+            </tr>
+        </thead>
+        <tbody id="books-table"></tbody>
+    </table>
     <script type="module" src="/assets/js/add-new-book.js"></script>
 </body>
 
