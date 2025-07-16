@@ -236,18 +236,23 @@ export const updateBooksView = async () => {
     }
 }
 
-const MarkAsReadHandler = async (bookId) => {
+const MarkAsReadHandler = async (bookId, method) => {
     const user = getUser();
+    const urlDelete = method === 'DELETE' ? `/${bookId}` : '';
+    const config = {
+        method: method,
+        headers: {
+            'Authorization': `Bearer ${getAccessToken()}`
+        }
+    };
+    if (method === 'POST') {
+        config.headers['Content-Type'] = 'application/json';
+        config.body = JSON.stringify({ bookId: Number(bookId) })
+    }
 
     try {
-        const response = await fetch(`/users/${user.id}/read-books`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAccessToken()}`
-            },
-            body: JSON.stringify({ bookId: Number(bookId) })
-        });
+        const response = await fetch(`/users/${user.id}/read-books${urlDelete}`, config);
+
 
         if (!response.ok) {
             const errorData = await response.json();
@@ -255,11 +260,10 @@ const MarkAsReadHandler = async (bookId) => {
             return;
         }
 
-        const result = await response.json();
-        return result;
+        return true;
     } catch (error) {
         console.error('Lỗi mạng hoặc máy chủ:', error);
-        return null;
+        return false;
     }
 }
 

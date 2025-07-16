@@ -51,15 +51,22 @@ export const setEventMarkAsReadTable = (MarkAsReadHandler) => {
             const idCell = row.querySelector('td');
             const bookId = idCell ? idCell.textContent.trim() : null;
 
-            if (bookId) {
-                const result = await MarkAsReadHandler(bookId);
-                if (result) {
-                    alert('Đánh dấu đã đọc thành công');
-                } else {
-                    alert('Đánh dấu thất bại');
-                    e.target.checked = false;
-                }
+            if (!bookId) return;
+
+            const isChecked = e.target.checked;
+            const method = isChecked ? 'POST' : 'DELETE';
+            const successMsg = isChecked ? 'Đánh dấu đã đọc thành công' : 'Xoá đánh dấu đã đọc thành công';
+            const errorMsg = isChecked ? 'Đánh dấu thất bại' : 'Xoá đánh dấu thất bại';
+
+            const result = await MarkAsReadHandler(bookId, method);
+
+            if (result) {
+                alert(successMsg);
+            } else {
+                alert(errorMsg);
+                e.target.checked = !isChecked;
             }
+
         }
     });
 
