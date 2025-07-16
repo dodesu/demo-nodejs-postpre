@@ -1,4 +1,4 @@
-
+import { getAccessToken, getUser } from './auth.js';
 const { renderBook } = await import('/assets/js/books.js');
 
 const UI = {
@@ -22,7 +22,7 @@ let isSetEventInput = {
 
 const Init = () => {
     const { NewAuthorBtn, NewGenreBtn, SubmitBtn } = UI;
-
+    CheckAuthAndAlert();
     NewAuthorBtn.addEventListener('click', () => toggleInput('new-author'));
     NewGenreBtn.addEventListener('click', () => toggleInput('new-genre'));
     SubmitBtn.addEventListener('click', submit);
@@ -109,7 +109,7 @@ const fetchAddItem = async (endpoint, name) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                'Authorization': `Bearer ${getAccessToken()}`
             },
             body: JSON.stringify(payload)
         });
@@ -127,36 +127,10 @@ const fetchAddItem = async (endpoint, name) => {
     }
 }
 
-const fetchAddGenre = async (name) => {
-    const newGenre = {
-        name: name
-    };
-    try {
-        const response = await fetch('/genres', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            },
-            body: JSON.stringify(newGenre)
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message);
-        }
-
-        const result = await response.json();
-
-        return result;
-    } catch (error) {
-        throw error;
-    }
-}
-
 const submit = async () => {
     const { Table, BodyTable } = UI;
-    const book = await fetchAddBook(getFormData());
+    const formData = getFormData();
+    const book = await fetchAddBook(formData);
 
     Table.classList.remove('hidden');
     renderBook(book, BodyTable);
@@ -186,7 +160,7 @@ const fetchAddBook = async (newBook) => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                'Authorization': `Bearer ${getAccessToken()}`
             },
             body: JSON.stringify({
                 title,
@@ -211,5 +185,36 @@ const fetchAddBook = async (newBook) => {
     }
 };
 
+const fetchAddBookToRead = async (bookId) => {
+    try {
+        const response = await fetch(`/books/${book.id}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            },
+            body: JSON.stringify({ id: bookId })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Lỗi khi đánh dấu sách:', errorData);
+            return;
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Lỗi mạng hoặc máy chủ:', error);
+        return null;
+    }
+}
+
+const CheckAuthAndAlert = async () => {
+    const user = getUser();
+    if (!user) {
+        alert('Bạn phải đăng nhập trước!');
+    }
+}
 
 Init();

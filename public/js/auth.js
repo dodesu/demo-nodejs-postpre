@@ -151,7 +151,7 @@ async function login(usernameOrEmail, password) {
         const data = await response.json();
         const token = data.access_token;
 
-        localStorage.setItem('access_token', token);
+        setAccessToken(token);
 
         return true;
     } catch (err) {
@@ -162,9 +162,10 @@ async function login(usernameOrEmail, password) {
 
 const initUser = async () => {
     const user = await getCurrentUser();
+    setUser(user);
+
     if (user) {
         createProfile(user.username);
-        await updateBooksView();
     }
     document.body.classList.remove('hidden');
 }
@@ -175,7 +176,7 @@ const getCurrentUser = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                'Authorization': `Bearer ${getAccessToken()}`
             }
         });
 
@@ -205,7 +206,7 @@ const createProfile = (username) => {
     logout.onmouseover = () => logout.style.backgroundColor = '#444';
     logout.onmouseleave = () => logout.style.backgroundColor = '#333';
     logout.onclick = () => {
-        localStorage.removeItem('access_token');
+        resetAccessToken();
         location.reload();
     };
 
@@ -213,13 +214,13 @@ const createProfile = (username) => {
     AuthBtns.appendChild(logout);
 }
 
-const updateBooksView = async () => {
+export const updateBooksView = async () => {
     try {
         const response = await fetch('/books', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                'Authorization': `Bearer ${getAccessToken()}`
             }
         });
 
@@ -233,5 +234,11 @@ const updateBooksView = async () => {
         console.error(error);
     }
 }
+
+const setAccessToken = (token) => localStorage.setItem('access_token', token);
+const setUser = (user) => localStorage.setItem('user', JSON.stringify(user));
+export const getAccessToken = () => localStorage.getItem('access_token');
+export const resetAccessToken = () => localStorage.removeItem('access_token');
+export const getUser = () => JSON.parse(localStorage.getItem('user'));
 
 init();

@@ -1,3 +1,4 @@
+import { getUser, updateBooksView } from './auth.js';
 const UI = {
     SearchBox: document.getElementById("search-box"),
     SearchInput: document.querySelector('.search-box input'),
@@ -5,8 +6,9 @@ const UI = {
     Table: document.querySelector('.responsive-table')
 };
 
-const init = () => {
+const init = async () => {
     setEventEnterSearchBox();
+    if (getUser()) await updateBooksView();
 }
 
 const setEventEnterSearchBox = () => {
