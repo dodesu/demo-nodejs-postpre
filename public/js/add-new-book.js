@@ -1,5 +1,5 @@
 import { getAccessToken, getUser } from './auth.js';
-const { renderBook } = await import('/assets/js/books.js');
+import { renderBook } from './books.js';
 
 const UI = {
     AuthorInput: document.getElementById('new-author'),
@@ -184,31 +184,6 @@ const fetchAddBook = async (newBook) => {
         return null;
     }
 };
-
-const fetchAddBookToRead = async (bookId) => {
-    try {
-        const response = await fetch(`/books/${book.id}/read`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${getAccessToken()}`
-            },
-            body: JSON.stringify({ id: bookId })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Lỗi khi đánh dấu sách:', errorData);
-            return;
-        }
-
-        const result = await response.json();
-        return result;
-    } catch (error) {
-        console.error('Lỗi mạng hoặc máy chủ:', error);
-        return null;
-    }
-}
 
 const CheckAuthAndAlert = async () => {
     const user = getUser();

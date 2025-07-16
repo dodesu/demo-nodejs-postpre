@@ -1,4 +1,4 @@
-const { renderBooks } = await import('/assets/js/books.js');
+const { renderBooks, setEventMarkAsReadTable } = await import('/assets/js/books.js');
 
 const UI = {
     LoginBtn: document.getElementById('login-button'),
@@ -8,6 +8,7 @@ const UI = {
 const init = () => {
     initUser();
     clickLoginBtn();
+    setEventMarkAsReadTable(MarkAsReadHandler);
 };
 const clickLoginBtn = () => {
     const { LoginBtn } = UI;
@@ -232,6 +233,33 @@ export const updateBooksView = async () => {
         renderBooks(books);
     } catch (error) {
         console.error(error);
+    }
+}
+
+const MarkAsReadHandler = async (bookId) => {
+    const user = getUser();
+
+    try {
+        const response = await fetch(`/users/${user.id}/read-books`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            },
+            body: JSON.stringify({ bookId: Number(bookId) })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Lỗi khi đánh dấu sách:', errorData);
+            return;
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Lỗi mạng hoặc máy chủ:', error);
+        return null;
     }
 }
 

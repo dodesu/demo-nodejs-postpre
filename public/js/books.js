@@ -40,3 +40,27 @@ export const renderBook = (book, BodyTableEl) => {
 
     BodyTableEl.appendChild(row);
 }
+
+export const setEventMarkAsReadTable = (MarkAsReadHandler) => {
+    const { Table } = UI;
+
+    Table.addEventListener('change', async (e) => {
+        if (e.target.type === 'checkbox') {
+            const checkbox = e.target;
+            const row = checkbox.closest('tr');
+            const idCell = row.querySelector('td');
+            const bookId = idCell ? idCell.textContent.trim() : null;
+
+            if (bookId) {
+                const result = await MarkAsReadHandler(bookId);
+                if (result) {
+                    alert('Đánh dấu đã đọc thành công');
+                } else {
+                    alert('Đánh dấu thất bại');
+                    e.target.checked = false;
+                }
+            }
+        }
+    });
+
+}
