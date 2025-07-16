@@ -74,7 +74,7 @@ export class BookService {
      */
     async create(dto: CreateBookDto, user) {
         // note: think about validate a user if others use this service
-        const { title, authorId, genreIds, publishedAt } = dto;
+        const { title, authorId, genreIds, publishedAt, isRead } = dto;
 
         const author = await this.authorRepository.findOneBy({ id: authorId });
         if (!author) throw new NotFoundException(`Author with id ${authorId} not found`);
@@ -89,12 +89,13 @@ export class BookService {
             author,
             genres,
             publishedAt: publishedAt ? new Date(publishedAt) : undefined,
-            creator: user
+            creator: user,
+            readers: isRead ? [user] : [],
         });
 
         const bookSaved = await this.bookRepository.save(book);
 
-        return new BookResponseDto(bookSaved);
+        return new BookResponseDto(bookSaved, user.id);
     }
 
     /**

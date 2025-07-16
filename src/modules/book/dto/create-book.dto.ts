@@ -6,7 +6,8 @@ import {
     ArrayNotEmpty,
     ArrayUnique,
     IsDefined,
-    Length
+    Length,
+    IsBoolean
 } from 'class-validator';
 
 export class CreateBookDto {
@@ -28,4 +29,8 @@ export class CreateBookDto {
     @IsOptional()
     @IsDateString()
     publishedAt?: Date;
+
+    @IsOptional()
+    @IsBoolean()
+    isRead?: boolean = false;
 }
