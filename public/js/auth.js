@@ -238,6 +238,10 @@ export const updateBooksView = async () => {
 
 const MarkAsReadHandler = async (bookId, method) => {
     const user = getUser();
+    if (!user) {
+        alert("Bạn phải đăng nhập trước!");
+        return false;
+    }
     const urlDelete = method === 'DELETE' ? `/${bookId}` : '';
     const config = {
         method: method,
@@ -268,9 +272,9 @@ const MarkAsReadHandler = async (bookId, method) => {
 }
 
 const setAccessToken = (token) => localStorage.setItem('access_token', token);
-const setUser = (user) => localStorage.setItem('user', JSON.stringify(user));
+const setUser = (user) => sessionStorage.setItem('user', JSON.stringify(user));
 export const getAccessToken = () => localStorage.getItem('access_token');
 export const resetAccessToken = () => localStorage.removeItem('access_token');
-export const getUser = () => JSON.parse(localStorage.getItem('user'));
+export const getUser = () => JSON.parse(sessionStorage.getItem('user'));
 
 init();
