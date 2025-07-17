@@ -43,7 +43,7 @@ export class BookService {
     async getById(id: number, user) {
         const book = await this.bookRepository.findOne({
             where: { id },
-            relations: ['author', 'genres', 'creator'],
+            relations: ['author', 'genres', 'creator', 'readers'],
             order: {
                 id: 'ASC'
             }
@@ -113,7 +113,7 @@ export class BookService {
      * @returns The updated book entity.
      */
     async update(id: number, dto: UpdateBookDto, user) {
-        const { title, authorId, genreIds, publishedAt } = dto;
+        const { title, authorId, genreIds, publishedAt, isRead } = dto;
 
         //#Start transaction
         const queryRunner = this.dataSource.createQueryRunner();
@@ -123,7 +123,7 @@ export class BookService {
         try {
             const bookInTx = await queryRunner.manager.findOne(Book, {
                 where: { id },
-                relations: ['author', 'genres', 'creator'],
+                relations: ['author', 'genres', 'creator', 'readers'],
             });
 
             if (!bookInTx) {
@@ -164,10 +164,34 @@ export class BookService {
                 bookInTx.genres = genres;
             }
 
-            const saved = await queryRunner.manager.save(bookInTx);
+            // #Save before update the readers, if not it will do nothing
+            await queryRunner.manager.save(bookInTx);
+
+            if (isRead !== undefined) {
+                const relBuilder = queryRunner.manager
+                    .createQueryBuilder()
+                    .relation(Book, 'readers')
+                    .of(bookInTx.id);
+
+                const alreadyMarked = bookInTx.readers?.some(r => r.id === user.id);
+                console.log('alreadyMarked', alreadyMarked);
+
+                if (isRead && !alreadyMarked) {
+                    await relBuilder.add(user.id);
+                } else if (!isRead && alreadyMarked) {
+                    await relBuilder.remove(user.id);
+                }
+            }
+
             await queryRunner.commitTransaction();
 
-            return new BookResponseDto(saved);
+            // #Preloading to sync with data already updated
+            const updated = await this.bookRepository.findOne({
+                where: { id },
+                relations: ['author', 'genres', 'creator', 'readers'],
+            });
+
+            return new BookResponseDto(updated!, user.id);
         } catch (error) {
             await queryRunner.rollbackTransaction();
             throw error;
