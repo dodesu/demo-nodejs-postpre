@@ -20,12 +20,17 @@ let isSetEventInput = {
     'new-genre': false
 };
 
-const Init = () => {
-    const { NewAuthorBtn, NewGenreBtn, SubmitBtn } = UI;
+const Init = async () => {
+    const { NewAuthorBtn, NewGenreBtn, SubmitBtn, Table, BodyTable } = UI;
     CheckAuthAndAlert();
     NewAuthorBtn.addEventListener('click', () => toggleInput('new-author'));
     NewGenreBtn.addEventListener('click', () => toggleInput('new-genre'));
     SubmitBtn.addEventListener('click', submit);
+
+    const id = checkIfUpdated();
+    if (id) {
+        SyncDataForm(await fetchGetBookById(id));
+    }
 }
 
 const toggleInput = async (id) => {
@@ -130,11 +135,34 @@ const fetchAddItem = async (endpoint, name) => {
 const submit = async () => {
     const { Table, BodyTable } = UI;
     const formData = getFormData();
-    const book = await fetchAddBook(formData);
+    const id = checkIfUpdated();
+    let book = {};
 
-    Table.classList.remove('hidden');
-    renderBook(book, BodyTable);
+    if (id) {
+        book = await fetchUpdateBook(id, formData);
+        if (book) {
+            alert('Cập nhật sách thành công');
+        } else {
+            alert('Cập nhật sách thất bại');
+        }
+    } else {
+        book = await fetchAddBook(formData);
+        Table.classList.remove('hidden');
+        renderBook(book, BodyTable);
+    }
 }
+
+const checkIfUpdated = () => {
+    const path = window.location.pathname;
+    const match = path.match(/^\/edit-book\/(\d+)$/);
+
+    if (!match) {
+        return null;
+    }
+    const id = match[1];
+    return id;
+}
+
 const getFormData = () => {
     const { Form } = UI;
     const formData = {};
@@ -151,9 +179,50 @@ const getFormData = () => {
     formData.isRead = Form.querySelector('#isRead').checked;
 
     return formData;
-};
+}
+
+const fetchGetBookById = async (id) => {
+    try {
+        const response = await fetch(`/books/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${getAccessToken()}`
+            }
+        });
+
+        if (response.status === 404) {
+            alert("Sách này không tồn tại!");
+            window.location.href = "/";
+        } else if (!response.ok) {
+            throw new Error(`Lỗi không xác định: ${res.status}`);
+        }
+
+        const result = await response.json();
+        if (result.creator.id !== getUser().id) {
+            alert('Bạn không có quyền chỉnh sửa sách này!');
+            window.location.href = "/";
+        }
+        return result;
+    } catch (error) {
+        console.error('Lỗi mạng hoặc máy chủ:', error);
+        return null;
+    }
+}
+
+const SyncDataForm = (book) => {
+    const { Form } = UI;
+    Form.querySelector('#title').value = book.title;
+    Form.querySelector('#author').value = book.author.id;
+    Form.querySelector('#publishedAt').value = book.publishedAt;
+    Form.querySelector('#isRead').checked = book.isRead;
+    Form.querySelector('#genres').querySelectorAll('input[name="genreIds"]').forEach(cb => {
+        if (book.genres.find(genre => genre.id === Number(cb.value))) {
+            cb.checked = true;
+        }
+    });
+}
+
 const fetchAddBook = async (newBook) => {
-    const { title, authorId, genreIds, publishedAt } = newBook;
+    const { title, authorId, genreIds, publishedAt, isRead } = newBook;
 
     try {
         const response = await fetch('/books', {
@@ -166,7 +235,8 @@ const fetchAddBook = async (newBook) => {
                 title,
                 authorId,
                 genreIds,
-                publishedAt
+                publishedAt,
+                isRead
             })
         });
 
@@ -183,7 +253,33 @@ const fetchAddBook = async (newBook) => {
         console.error('Lỗi mạng hoặc máy chủ:', error);
         return null;
     }
-};
+}
+
+const fetchUpdateBook = async (id, book) => {
+    try {
+        console.log(book);
+        const response = await fetch(`/books/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            },
+            body: JSON.stringify(book)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Lỗi khi cập nhập sách:', errorData);
+            return;
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Lỗi mạng hoặc máy chủ:', error);
+        return null;
+    }
+}
 
 const CheckAuthAndAlert = async () => {
     const user = getUser();

@@ -26,6 +26,7 @@ export const renderBooks = (books) => {
 }
 
 export const renderBook = (book, BodyTableEl) => {
+    if (!book) return;
     const row = document.createElement('tr');
     row.innerHTML = `
             <td>${book.id}</td>

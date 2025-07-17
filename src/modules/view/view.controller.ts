@@ -48,7 +48,7 @@ export class ViewController {
     }
 
     @Get('add-new-book')
-    @Render('add-new-book')
+    @Render('book-detail')
     async addNewBook() {
         const genres = await this.genreService.getAll();
         const authors = await this.authorService.getAll();
@@ -57,5 +57,17 @@ export class ViewController {
             genres: genres
         };
     }
+
+    @Get('edit-book/:id')
+    @Render('book-detail')
+    async editBook() {
+        const genres = await this.genreService.getAll();
+        const authors = await this.authorService.getAll();
+        return {
+            authors: authors,
+            genres: genres
+        };
+    }
+
 
 }

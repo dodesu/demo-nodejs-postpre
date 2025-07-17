@@ -174,7 +174,6 @@ export class BookService {
                     .of(bookInTx.id);
 
                 const alreadyMarked = bookInTx.readers?.some(r => r.id === user.id);
-                console.log('alreadyMarked', alreadyMarked);
 
                 if (isRead && !alreadyMarked) {
                     await relBuilder.add(user.id);

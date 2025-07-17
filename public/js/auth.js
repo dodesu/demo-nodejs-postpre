@@ -74,6 +74,7 @@ async function createLoginModel() {
         if (await login(usernameOrEmail, pass)) {
             alert('Đăng nhập thành công');
             await initUser();
+            window.location.reload(); //refresh
         } else {
             alert('Đăng nhập thất bại');
         }
