@@ -2,6 +2,7 @@ const { renderBooks, setEventMarkAsReadTable } = await import('/assets/js/books.
 
 const UI = {
     LoginBtn: document.getElementById('login-button'),
+    RegisterBtn: document.getElementById('register-button'),
     AuthBtns: document.querySelector('.auth-buttons')
 }
 
@@ -11,10 +12,11 @@ const init = () => {
     setEventMarkAsReadTable(MarkAsReadHandler);
 };
 const clickLoginBtn = () => {
-    const { LoginBtn } = UI;
-    LoginBtn.addEventListener('click', createLoginModel);
+    const { LoginBtn, RegisterBtn } = UI;
+    LoginBtn.addEventListener('click', () => createModel('LOGIN'));
+    RegisterBtn.addEventListener('click', () => createModel('REGISTER'));
 }
-async function createLoginModel() {
+async function createModel(type) {
     // Base element model
     const model = document.createElement('div');
     model.style.position = 'fixed';
@@ -60,7 +62,7 @@ async function createLoginModel() {
 
     // Title
     const title = document.createElement('h2');
-    title.innerText = 'Đăng nhập';
+    title.innerText = type === 'LOGIN' ? 'Đăng nhập' : 'Đăng ký';
     title.style.textAlign = 'center';
     title.style.marginTop = '0';
     title.style.marginBottom = '20px';
@@ -69,14 +71,41 @@ async function createLoginModel() {
     const form = document.createElement('form');
     form.onsubmit = async function (e) {
         e.preventDefault();
-        const usernameOrEmail = form.querySelector('#usernameOrEmail').value;
-        const pass = form.querySelector('#password').value;
-        if (await login(usernameOrEmail, pass)) {
-            alert('Đăng nhập thành công');
-            await initUser();
-            window.location.reload(); //refresh
+        let username, email, confirmPass, usernameOrEmail;
+        if (type === 'REGISTER') {
+            username = form.querySelector('#username').value;
+            email = form.querySelector('#email').value;
+            confirmPass = form.querySelector('#confirmPassword').value;
         } else {
-            alert('Đăng nhập thất bại');
+            usernameOrEmail = form.querySelector('#usernameOrEmail').value;
+        }
+        const pass = form.querySelector('#password').value;
+        let isSuccess = false;
+
+        // #Branching
+        if (type === 'REGISTER') {
+            try {
+                await register(username, email, pass, confirmPass);
+                isSuccess = true;
+                alert('Đăng ký thành công.');
+            } catch (error) {
+                alert('Đăng ký thất bại: ' + error.message);
+            }
+
+            if (isSuccess) {
+                await login(username, pass);
+            }
+            // #Case Login
+        } else {
+            const res = await login(usernameOrEmail, pass);
+            const msg = res ? 'Đăng nhập thành công' : 'Đăng nhập thất bại';
+            alert(msg);
+            if (res) isSuccess = true;
+        }
+
+        if (isSuccess) {
+            initUser();
+            window.location.reload();
         }
         model.remove();
     };
@@ -107,23 +136,30 @@ async function createLoginModel() {
         return div;
     };
 
-    const loginBtn = document.createElement('button');
-    loginBtn.type = 'submit';
-    loginBtn.innerText = 'Đăng nhập';
-    loginBtn.style.width = '100%';
-    loginBtn.style.padding = '10px';
-    loginBtn.style.backgroundColor = '#333';
-    loginBtn.style.color = '#fff';
-    loginBtn.style.border = 'none';
-    loginBtn.style.borderRadius = '5px';
-    loginBtn.style.cursor = 'pointer';
-    loginBtn.onmouseover = () => loginBtn.style.backgroundColor = '#444';
-    loginBtn.onmouseleave = () => loginBtn.style.backgroundColor = '#333';
+    const SubmitBtn = document.createElement('button');
+    SubmitBtn.type = 'submit';
+    SubmitBtn.innerText = type === 'LOGIN' ? 'Đăng nhập' : 'Đăng ký';
+    SubmitBtn.style.width = '100%';
+    SubmitBtn.style.padding = '10px';
+    SubmitBtn.style.backgroundColor = '#333';
+    SubmitBtn.style.color = '#fff';
+    SubmitBtn.style.border = 'none';
+    SubmitBtn.style.borderRadius = '5px';
+    SubmitBtn.style.cursor = 'pointer';
+    SubmitBtn.onmouseover = () => SubmitBtn.style.backgroundColor = '#444';
+    SubmitBtn.onmouseleave = () => SubmitBtn.style.backgroundColor = '#333';
 
     // Append child
-    form.appendChild(group('Email hoặc Username:', 'text', 'usernameOrEmail'));
-    form.appendChild(group('Mật khẩu:', 'password', 'password'));
-    form.appendChild(loginBtn);
+    if (type === 'REGISTER') {
+        form.appendChild(group('Username:', 'text', 'username'));
+        form.appendChild(group('Email:', 'email', 'email'));
+        form.appendChild(group('Mật khẩu:', 'password', 'password'));
+        form.appendChild(group('Xác nhân mật khẩu:', 'password', 'confirmPassword'));
+    } else {
+        form.appendChild(group('Username hoặc Email:', 'text', 'usernameOrEmail'));
+        form.appendChild(group('Mật khẩu:', 'password', 'password'));
+    }
+    form.appendChild(SubmitBtn);
     content.appendChild(close);
     content.appendChild(title);
     content.appendChild(form);
@@ -132,6 +168,39 @@ async function createLoginModel() {
     // Add to body
     document.body.appendChild(model);
 }
+
+const register = async (username, email, password, confirmPassword) => {
+    const register = {
+        username: username,
+        password: password,
+        confirmPassword: confirmPassword
+    }
+    if (email.length > 5) {
+        register.email = email;
+    }
+
+    try {
+        const response = await fetch('/auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(register)
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error('Lỗi khi đăng ký:', err.message);
+        throw err;
+    }
+}
+
 async function login(usernameOrEmail, password) {
     try {
         const response = await fetch('/auth/login', {
