@@ -4,6 +4,8 @@ import { UpdateAuthorDto } from './dto/update-author.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Author } from './entities/author.entity';
 import { Repository } from 'typeorm';
+import { AuthorResponseDto } from './dto/author-response.dto';
+
 
 @Injectable()
 export class AuthorService {
@@ -13,8 +15,9 @@ export class AuthorService {
         private readonly authorRepository: Repository<Author>
     ) { }
 
-    getAll() {
-        return this.authorRepository.find({ order: { id: 'ASC' } });
+    async getAll() {
+        const authors = await this.authorRepository.find({ order: { id: 'ASC' } });
+        return authors.map((author) => new AuthorResponseDto(author));
     }
 
     async getById(id: number) {
@@ -23,14 +26,16 @@ export class AuthorService {
             throw new NotFoundException(`Author with id ${id} not found`);
         }
 
-        return author;
+        return new AuthorResponseDto(author);
     }
 
-    create(dto: CreateAuthorDto) {
+    async create(dto: CreateAuthorDto) {
         const { name } = dto;
         const author = this.authorRepository.create({ name });
 
-        return this.authorRepository.save(author);
+        const saved = await this.authorRepository.save(author);
+
+        return new AuthorResponseDto(saved);
     }
 
     async update(id: number, dto: UpdateAuthorDto) {
@@ -43,7 +48,9 @@ export class AuthorService {
 
         if (name) author.name = name;
 
-        return this.authorRepository.save(author);
+        const upated = await this.authorRepository.save(author);
+
+        return new AuthorResponseDto(upated);
     }
 
     async delete(id: number) {

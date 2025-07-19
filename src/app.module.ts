@@ -7,6 +7,9 @@ import { BookModule } from './modules/book/book.module';
 import { AuthorModule } from './modules/author/author.module';
 import { GenreModule } from './modules/genre/genre.module';
 import databaseConfig from './config/database.config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { ViewModule } from './modules/view/view.module';
 
 @Module({
   imports: [
@@ -14,6 +17,11 @@ import databaseConfig from './config/database.config';
       isGlobal: true,
       envFilePath: '.env',
       load: [databaseConfig],
+    }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '../../', 'public'),
+      serveRoot: '/assets',
     }),
 
     TypeOrmModule.forRootAsync({
@@ -44,6 +52,8 @@ import databaseConfig from './config/database.config';
     AuthorModule,
 
     GenreModule,
+
+    ViewModule,
   ]
 })
 export class AppModule { }

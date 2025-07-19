@@ -7,6 +7,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { BookResponseDto } from '../book/dto/book-response.dto';
 import { Book } from '../book/entities/book.entity';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @Injectable()
 export class UserService {
@@ -18,17 +19,19 @@ export class UserService {
         private bookRepository: Repository<Book>,
     ) { }
 
-    getAll() {
-        return this.userRepository.find();
+    async getAll() {
+        const users = await this.userRepository.find();
+
+        return users.map((user) => new UserResponseDto(user));
     }
 
-    async getByIdOrThrow(id: number) {
+    async getById(id: number) {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new NotFoundException(`User with ID ${id} not found.`);
         }
 
-        return user;
+        return new UserResponseDto(user);
     }
 
     getByEmail(email: string) {
@@ -70,13 +73,18 @@ export class UserService {
             password
         });
 
-        return this.userRepository.save(dto);
+        const saved = await this.userRepository.save(dto);
+
+        return new UserResponseDto(saved);
     }
 
     async update(id: number, dto: UpdateUserDto) {
         const { username, email, password } = dto;
 
-        const user = await this.getByIdOrThrow(id);
+        const user = await this.userRepository.findOne({ where: { id } });
+        if (!user) {
+            throw new NotFoundException(`User with ID ${id} not found.`);
+        }
 
         // #Validate username and email, if valid, update
 
@@ -111,7 +119,9 @@ export class UserService {
             user.password = password.slice(0, 6) === '$2a$10' ? password : await bcrypt.hash(password, 10);
         }
 
-        return this.userRepository.save(user);
+        const updated = await this.userRepository.save(user);
+
+        return new UserResponseDto(updated);
     }
 
     async delete(id: number) {

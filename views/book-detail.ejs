@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tạo Book</title>
+    <link rel="stylesheet" href="/assets/css/add-new-book.css">
+</head>
+
+<body>
+    <header>
+        <div class="auth-buttons">
+            <button id="register-button">Đăng ký</button>
+            <button id="login-button">Đăng nhập</button>
+        </div>
+    </header>
+    <form onsubmit="return false;" novalidate id="book-form">
+        <h2>Tạo sách mới</h2>
+
+        <label for="title">Tiêu đề</label>
+        <input type="text" id="title" name="title" required />
+
+        <label for="author">Tác giả</label>
+        <select id="author" name="authorId">
+            <% authors.forEach(author=> { %>
+                <option value="<%= author.id %>">
+                    <%= author.name %>
+                </option>
+                <% }) %>
+        </select>
+        <div class="add-new">
+            <input type="text" id="new-author" placeholder="Tên tác giả mới" style="display:none;" />
+            <button type="button" id="new-author-button">Thêm mới</button>
+        </div>
+
+        <label>Thể loại</label>
+        <div class="checkbox-group" id="genres">
+            <% genres.forEach(genre=> { %>
+                <label><input type="checkbox" name="genreIds" value="<%= genre.id %>">
+                    <%= genre.name %>
+                </label>
+                <% }) %>
+        </div>
+        <div class="add-new">
+            <input type="text" id="new-genre" placeholder="Tên thể loại mới" style="display:none;" />
+            <button type="button" id="new-genre-button">Thêm mới</button>
+        </div>
+
+        <label for="publishedAt">Ngày xuất bản</label>
+        <input type="date" id="publishedAt" name="publishedAt" />
+
+        <label>
+            <input type="checkbox" id="isRead" name="isRead" />
+            Đã đọc
+        </label>
+
+        <div style="margin-top: 1.5rem;">
+            <button type="submit" id="submit-button">Lưu sách</button>
+        </div>
+    </form>
+    <table class="responsive-table hidden">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Published</th>
+                <th>Created At</th>
+                <th>Author</th>
+                <th>Genres</th>
+                <th>Creator</th>
+                <th>Is Read</th>
+            </tr>
+        </thead>
+        <tbody id="books-table"></tbody>
+    </table>
+    <script type="module" src="/assets/js/add-new-book.js"></script>
+</body>
+
+</html>

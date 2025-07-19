@@ -2,13 +2,70 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <link rel="stylesheet" href="/assets/css/style.css" />
 </head>
 
-<body>
-    <h1>Welcome</h1>
+<body class="hidden">
+    <header>
+        <div class="search-box">
+            <input type="text" placeholder="Tìm sách...">
+        </div>
+        <div class="auth-buttons">
+            <button id="register-button">Đăng ký</button>
+            <button id="login-button">Đăng nhập</button>
+        </div>
+    </header>
+
+    <table class="responsive-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Published</th>
+                <th>Created At</th>
+                <th>Author</th>
+                <th>Genres</th>
+                <th>Creator</th>
+                <th>Is Read</th>
+            </tr>
+        </thead>
+        <tbody id="books-table">
+            <% books.forEach(book=> { %>
+                <tr>
+                    <td>
+                        <%= book.id %>
+                    </td>
+                    <td>
+                        <%= book.title %>
+                    </td>
+                    <td>
+                        <%= new Date(book.publishedAt).toLocaleDateString() %>
+                    </td>
+                    <td>
+                        <%= new Date(book.createdAt).toLocaleDateString() %>
+                    </td>
+                    <td>
+                        <%= book.author.name %>
+                    </td>
+                    <td>
+                        <%= book.genres.map((g)=> g.name).join(', ') %>
+                    </td>
+                    <td>
+                        <%= book.creator.name %>
+                    </td>
+                    <td>
+                        <input type="checkbox">
+                    </td>
+                </tr>
+                <% }) %>
+        </tbody>
+    </table>
+
+    <script type="module" src="/assets/js/home.js"></script>
+    <script type="module" src="/assets/js/auth.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,203 @@
+/* Base Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    padding: 20px;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.search-box {
+    flex: 1;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: #1e1e1e;
+    color: #fff;
+    font-size: 16px;
+}
+
+.auth-buttons {
+    margin-left: 20px;
+}
+
+.auth-buttons button {
+    background-color: #2c2c2c;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.auth-buttons button:hover {
+    background-color: #444;
+}
+
+/* Table */
+
+.responsive-table {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 200px;
+}
+
+.responsive-table table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    /* hoặc số cột tối thiểu */
+}
+
+th,
+td {
+    padding: 14px 20px;
+    text-align: left;
+}
+
+th {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+tr:hover {
+    background-color: #3a3a3a;
+}
+
+td {
+    color: #ccc;
+}
+
+/*Search*/
+.search-actions {
+    margin-left: 20px;
+}
+
+#toggle-advanced {
+    background-color: #2c2c2c;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#toggle-advanced:hover {
+    background-color: #444;
+}
+
+.advanced-search {
+    background-color: #1e1e1e;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.advanced-search>form>div {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}
+
+.advanced-search input,
+.advanced-search select {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2c2c2c;
+    color: #fff;
+    width: 550px;
+}
+
+#submit-button {
+    margin-top: auto;
+    background-color: #3c3c3c;
+    color: #fff;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.advanced-search button[type="submit"]:hover {
+    background-color: #555;
+}
+
+#filter-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    justify-content: center;
+}
+
+.full-row {
+    grid-column: 1 / -1;
+}
+
+.genre-group {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.genre-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px 20px;
+    margin-top: 6px;
+    width: 1200px;
+    place-items: center;
+}
+
+.genre-options label {
+    width: 100%;
+    font-size: 14px;
+    background-color: #916464;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.genre-options label:hover {
+    background-color: #444;
+}
+
+
+.genre-options input[type="checkbox"] {
+    accent-color: #fff;
+    width: 16px;
+    height: 16px
+}
+
+
+.hidden {
+    display: none;
+}

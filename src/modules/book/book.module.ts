@@ -14,6 +14,6 @@ import { GenreModule } from '../genre/genre.module';
   ],
   controllers: [BookController],
   providers: [BookService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, BookService],
 })
 export class BookModule { }

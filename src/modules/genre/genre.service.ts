@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Genre } from './entities/genre.entity';
 import { CreateGenreDto } from './dto/create-genre.dto';
 import { UpdateGenreDto } from './dto/update-genre.dto';
+import { GenreResponseDto } from './dto/genre-response.dto';
 
 @Injectable()
 export class GenreService {
@@ -12,19 +13,29 @@ export class GenreService {
         private readonly genreRepository: Repository<Genre>
     ) { }
 
-    getAll() {
-        return this.genreRepository.find({ order: { id: 'ASC' } });
+    async getAll() {
+        const genres = await this.genreRepository.find({ order: { id: 'ASC' } });
+
+        return genres.map((genre) => new GenreResponseDto(genre));
     }
 
-    getById(id: number) {
-        return this.genreRepository.findOneBy({ id });
+    async getById(id: number) {
+        const genre = await this.genreRepository.findOneBy({ id });
+
+        if (!genre) {
+            throw new NotFoundException(`Genre with id ${id} not found`);
+        }
+
+        return new GenreResponseDto(genre);
     }
 
-    create(dto: CreateGenreDto) {
+    async create(dto: CreateGenreDto) {
         const { name } = dto;
         const genre = this.genreRepository.create({ name });
 
-        return this.genreRepository.save(genre);
+        const saved = await this.genreRepository.save(genre);
+
+        return new GenreResponseDto(saved);
     }
 
     async update(id: number, dto: UpdateGenreDto) {
@@ -35,7 +46,9 @@ export class GenreService {
             throw new NotFoundException(`Genre with id ${id} not found`);
         }
 
-        return this.genreRepository.save(genre);
+        const updated = await this.genreRepository.save(genre);
+
+        return new GenreResponseDto(updated);
     }
 
     async delete(id: number) {
