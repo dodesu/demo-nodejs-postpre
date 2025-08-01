@@ -114,3 +114,11 @@ npm run start:dev
 
 🛡 All user-specific actions require JWT authentication  
 📄 All list endpoints support pagination via `?page=1&limit=10`
+
+## 💼 Planned Features
+- Reading progress tracking (e.g., 70%, 80%)
+- Personal notes for each book
+- User profile with reading statistics
+- Book rating system
+- Reading schedule with notifications/reminders
+- Social sharing of reading status and reviews
