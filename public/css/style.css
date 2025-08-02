@@ -138,12 +138,15 @@ td {
 
 #submit-button {
     margin-top: auto;
+    width: 100px;
     background-color: #3c3c3c;
+    font-weight: bold;
     color: #fff;
     padding: 10px 16px;
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    margin: auto;
 }
 
 .advanced-search button[type="submit"]:hover {
