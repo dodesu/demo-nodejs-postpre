@@ -7,8 +7,10 @@ import {
     Max,
     MaxLength,
     IsDate,
+    IsBoolean
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { BadRequestException } from '@nestjs/common';
 
 type Sort = 'title_asc' | 'title_desc' | 'published_asc' | 'published_desc';
 
@@ -44,6 +46,15 @@ export class SearchBookDto {
     @IsInt({ each: true })
     @ArrayUnique()
     genreIds?: number[];
+
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (value !== 'true' && value !== 'false') {
+            throw new BadRequestException('isRead must be "true" or "false"');
+        }
+        return value === 'true';
+    })
+    isRead?: Boolean;
 
     @IsOptional()
     @Type(() => Date)

@@ -1,3 +1,5 @@
+import { getAccessToken } from './auth.js';
+
 const { renderBooks } = await import('/assets/js/books.js');
 
 const UI = {
@@ -15,6 +17,37 @@ const init = () => {
     setEventToggleAdvancedSearch();
     setCurrentValueSearchBox();
     setSubmitEvent();
+    initResult();
+}
+
+const initResult = async () => {
+    const result = await fetchNormalSearch();
+    if (!result) return;
+
+    renderBooks(result.data);
+    updateMeta(result.meta);
+}
+const fetchNormalSearch = async () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const response = await fetch(`books/search?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            }
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }
 
 const setEventToggleAdvancedSearch = () => {
@@ -61,8 +94,10 @@ const submit = async () => {
     let genreIds = [...advancedSearch.querySelectorAll('input[name="genreIds"]:checked')].map(input => input.value);
     let publishedFrom = advancedSearch.querySelector('input[name="publishedFrom"]').value;
     let publishedTo = advancedSearch.querySelector('input[name="publishedTo"]').value;
+    let isRead = advancedSearch.querySelector('input[name="isRead"]').checked;
 
-    const result = await fetchSearchAdvanced(title, authorId, creatorName, genreIds, publishedFrom, publishedTo);
+    const query = { title, authorId, creatorName, genreIds, publishedFrom, publishedTo, isRead };
+    const result = await fetchSearchAdvanced(query);
 
     renderBooks(result.data);
     updateMeta(result.meta);
@@ -73,7 +108,8 @@ const updateMeta = (meta) => {
     resultCount.textContent = `Tìm thấy ${meta.total} sách`;
 }
 
-const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publishedFrom, publishedTo) => {
+const fetchSearchAdvanced = async (query) => {
+    const { title, authorId, creatorName, genreIds, publishedFrom, publishedTo, isRead } = query;
     try {
         let params = '';
         params += title ? `title=${encodeURIComponent(title)}` : '';
@@ -82,8 +118,15 @@ const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publi
         params += genreIds ? `&${genreIds.map(id => `genreIds=${id}`).join('&')}` : '';
         params += publishedFrom ? `&publishedFrom=${publishedFrom}` : '';
         params += publishedTo ? `&publishedTo=${publishedTo}` : '';
+        params += isRead ? `&isRead=${isRead}` : '';
 
-        const response = await fetch(`books/?${params}`);
+        const response = await fetch(`books/?${params}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            }
+        });
         const data = await response.json();
         const newUrl = `/result?${params}`;
         window.history.pushState(null, '', newUrl);

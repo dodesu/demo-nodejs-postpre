@@ -23,6 +23,7 @@ export const renderBooks = (books) => {
     books?.forEach(book => {
         renderBook(book, BodyTable);
     })
+    console.log(books[0], 'chiut');
 }
 
 export const renderBook = (book, BodyTableEl) => {

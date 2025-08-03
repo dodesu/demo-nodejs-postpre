@@ -48,6 +48,8 @@ export class BookResponseDto {
 
         if (currentUserId) {
             this.isRead = !!book.readers?.some((reader) => reader.id === currentUserId);
+        } else {
+            this.isRead = false;
         }
     }
 }
