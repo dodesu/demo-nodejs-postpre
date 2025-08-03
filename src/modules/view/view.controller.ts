@@ -31,17 +31,10 @@ export class ViewController {
     @Render('result')
     async result(@Query() dto: SearchBookDto) {
         const { keyword } = dto;
-        let result;
-        if (keyword) {
-            result = await this.bookService.search(dto);
-        } else {
-            result = await this.bookService.searchAdvanced(dto);
-        }
 
         const genres = await this.genreService.getAll();
         const authors = await this.authorService.getAll();
         return {
-            result: result,
             genres: genres,
             authors: authors
         };

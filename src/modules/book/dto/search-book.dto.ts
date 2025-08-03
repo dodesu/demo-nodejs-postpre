@@ -7,6 +7,7 @@ import {
     Max,
     MaxLength,
     IsDate,
+    IsBoolean
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
@@ -44,6 +45,10 @@ export class SearchBookDto {
     @IsInt({ each: true })
     @ArrayUnique()
     genreIds?: number[];
+
+    @IsOptional()
+    @IsBoolean()
+    isRead?: Boolean;
 
     @IsOptional()
     @Type(() => Date)

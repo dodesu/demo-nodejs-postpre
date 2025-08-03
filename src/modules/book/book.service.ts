@@ -256,7 +256,7 @@ export class BookService {
      *
      * @returns An array of book entities matching the search criteria.
      */
-    async search(dto: SearchBookDto) {
+    async search(dto: SearchBookDto, user?) {
         const { keyword, page, limit } = dto;
 
         // # Subquery
@@ -291,6 +291,7 @@ export class BookService {
             .leftJoinAndSelect("book.author", "author")
             .leftJoinAndSelect("book.genres", "genre")
             .leftJoinAndSelect("book.creator", "creator")
+            .leftJoinAndSelect("book.readers", "reader")
             .where(`book.id IN (${titleMatch.getQuery()})`)
             .orWhere(`book.id  IN (${authorMatch.getQuery()})`)
             .orWhere(`book.id IN (${genreMatch.getQuery()})`)
@@ -300,7 +301,7 @@ export class BookService {
         const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
 
         return {
-            data: data.map((item) => new BookResponseDto(item)),
+            data: data.map((item) => new BookResponseDto(item, user?.id)),
             meta: {
                 total,
                 page,
@@ -326,12 +327,13 @@ export class BookService {
      * @returns An object containing an array of book entities matching the search criteria,
      *          and metadata including total count, current page, limit, and total pages.
      */
-    async searchAdvanced(dto: SearchBookDto) {
+    async searchAdvanced(dto: SearchBookDto, user?) {
         const {
             title,
             authorId,
             genreIds,
             creatorName,
+            isRead,
             publishedFrom,
             publishedTo,
             sort = 'title_asc',
@@ -344,13 +346,15 @@ export class BookService {
             author: `author.id = :authorId`,
             creator: `creator.username ILIKE :name`,
             genres: `genres.id IN (:...genreIds)`,
-            published: `book.publishedAt BETWEEN :from AND :to`
+            published: `book.publishedAt BETWEEN :from AND :to`,
+            isRead: `book.isRead = :isRead`
         };
 
         const bookQuery = this.bookRepository.createQueryBuilder('book')
             .leftJoinAndSelect('book.author', 'author')
             .leftJoinAndSelect('book.genres', 'genres')
             .leftJoinAndSelect('book.creator', 'creator')
+            .leftJoinAndSelect('book.readers', 'readers')
             .where('1 = 1');
         // Add a dummy WHERE clause to allow chaining .andWhere() without checking if it's the first condition
 
@@ -403,7 +407,7 @@ export class BookService {
         const [data, total, totalPages] = await this.getPaginatedBooks(bookQuery, page, limit);
 
         return {
-            data: data.map((item) => new BookResponseDto(item)),
+            data: data.map((item) => new BookResponseDto(item, user?.id)),
             meta: {
                 total,
                 page,

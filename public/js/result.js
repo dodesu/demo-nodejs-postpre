@@ -1,3 +1,5 @@
+import { getAccessToken } from './auth.js';
+
 const { renderBooks } = await import('/assets/js/books.js');
 
 const UI = {
@@ -15,6 +17,37 @@ const init = () => {
     setEventToggleAdvancedSearch();
     setCurrentValueSearchBox();
     setSubmitEvent();
+    initResult();
+}
+
+const initResult = async () => {
+    const result = await fetchNormalSearch();
+    if (!result) return;
+
+    renderBooks(result.data);
+    updateMeta(result.meta);
+}
+const fetchNormalSearch = async () => {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const response = await fetch(`books/search?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            }
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }
 
 const setEventToggleAdvancedSearch = () => {
@@ -83,7 +116,13 @@ const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publi
         params += publishedFrom ? `&publishedFrom=${publishedFrom}` : '';
         params += publishedTo ? `&publishedTo=${publishedTo}` : '';
 
-        const response = await fetch(`books/?${params}`);
+        const response = await fetch(`books/?${params}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAccessToken()}`
+            }
+        });
         const data = await response.json();
         const newUrl = `/result?${params}`;
         window.history.pushState(null, '', newUrl);

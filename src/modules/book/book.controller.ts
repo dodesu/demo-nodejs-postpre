@@ -32,7 +32,7 @@ export class BookController {
         const hasQuery = undefinedCount < Object.keys(dto).length - haveDefaultValue;
 
         if (hasQuery) {
-            return this.bookService.searchAdvanced(dto);
+            return this.bookService.searchAdvanced(dto, user);
         }
 
         return this.bookService.getAll(user);
@@ -40,10 +40,9 @@ export class BookController {
 
     // #Important note: Place '/search' before '/:id'. If not, it will be matched to '/:id', and it error
     @UseGuards(OptionalJwtAuthGuard)
-    @Get()
     @Get('search')
-    search(@Query() dto: SearchBookDto) {
-        return this.bookService.search(dto);
+    search(@Query() dto: SearchBookDto, @CurrentUser() user) {
+        return this.bookService.search(dto, user);
     }
 
     @UseGuards(OptionalJwtAuthGuard)
