@@ -259,6 +259,7 @@ export class BookService {
     async search(dto: SearchBookDto, user?) {
         const { keyword, page, limit } = dto;
 
+        //Fix later: Change to raw query, use to_tsvector, @@, plainto_tsquery
         // # Subquery
 
         const authorMatch = this.bookRepository
@@ -347,7 +348,7 @@ export class BookService {
             creator: `creator.username ILIKE :name`,
             genres: `genres.id IN (:...genreIds)`,
             published: `book.publishedAt BETWEEN :from AND :to`,
-            isRead: `book.isRead = :isRead`
+            isRead: `readers.id = :userId`
         };
 
         const bookQuery = this.bookRepository.createQueryBuilder('book')
@@ -359,6 +360,10 @@ export class BookService {
         // Add a dummy WHERE clause to allow chaining .andWhere() without checking if it's the first condition
 
         // #Searching..
+
+        if (isRead) {
+            bookQuery.andWhere(whereClauses.isRead, { userId: user.id });
+        }
 
         if (title) {
             bookQuery.andWhere(whereClauses.title, { title: `%${title}%` });

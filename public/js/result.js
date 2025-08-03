@@ -94,8 +94,10 @@ const submit = async () => {
     let genreIds = [...advancedSearch.querySelectorAll('input[name="genreIds"]:checked')].map(input => input.value);
     let publishedFrom = advancedSearch.querySelector('input[name="publishedFrom"]').value;
     let publishedTo = advancedSearch.querySelector('input[name="publishedTo"]').value;
+    let isRead = advancedSearch.querySelector('input[name="isRead"]').checked;
 
-    const result = await fetchSearchAdvanced(title, authorId, creatorName, genreIds, publishedFrom, publishedTo);
+    const query = { title, authorId, creatorName, genreIds, publishedFrom, publishedTo, isRead };
+    const result = await fetchSearchAdvanced(query);
 
     renderBooks(result.data);
     updateMeta(result.meta);
@@ -106,7 +108,8 @@ const updateMeta = (meta) => {
     resultCount.textContent = `Tìm thấy ${meta.total} sách`;
 }
 
-const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publishedFrom, publishedTo) => {
+const fetchSearchAdvanced = async (query) => {
+    const { title, authorId, creatorName, genreIds, publishedFrom, publishedTo, isRead } = query;
     try {
         let params = '';
         params += title ? `title=${encodeURIComponent(title)}` : '';
@@ -115,6 +118,7 @@ const fetchSearchAdvanced = async (title, authorId, creatorName, genreIds, publi
         params += genreIds ? `&${genreIds.map(id => `genreIds=${id}`).join('&')}` : '';
         params += publishedFrom ? `&publishedFrom=${publishedFrom}` : '';
         params += publishedTo ? `&publishedTo=${publishedTo}` : '';
+        params += isRead ? `&isRead=${isRead}` : '';
 
         const response = await fetch(`books/?${params}`, {
             method: 'GET',

@@ -10,6 +10,7 @@ import {
     IsBoolean
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { BadRequestException } from '@nestjs/common';
 
 type Sort = 'title_asc' | 'title_desc' | 'published_asc' | 'published_desc';
 
@@ -47,7 +48,12 @@ export class SearchBookDto {
     genreIds?: number[];
 
     @IsOptional()
-    @IsBoolean()
+    @Transform(({ value }) => {
+        if (value !== 'true' && value !== 'false') {
+            throw new BadRequestException('isRead must be "true" or "false"');
+        }
+        return value === 'true';
+    })
     isRead?: Boolean;
 
     @IsOptional()
