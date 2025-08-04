@@ -8,9 +8,11 @@
 ```
 src/
 ├── common/                 # Shared utilities
-│   ├── config/             # Global configuration files
 │   ├── decorators/         # Custom decorators
 │   ├── filters/            # Exception filters
+│   └── guards/      
+│     
+├── config/                 # Global configuration files
 │   └── database.config.ts  # Database connection config
 │
 ├── database/               # Database migration & seeding
