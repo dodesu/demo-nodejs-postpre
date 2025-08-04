@@ -1,3 +1,4 @@
+// NestJS core imports
 import {
     Controller,
     Param, Body,
@@ -6,16 +7,25 @@ import {
     UseGuards,
     ForbiddenException
 } from '@nestjs/common';
-import { UserService } from './user.service';
+import { AuthGuard } from '@nestjs/passport';
+
+// Custom guards & decorators
+import { SelfOrAdminGuard } from 'src/common/guards/self-or-admin.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { OptionalJwtAuthGuard } from 'src/common/guards/optional-jwt-auth.guard';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
+
+// DTOs
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { SelfOrAdminGuard } from 'src/common/guards/self-or-admin.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { RolesGuard } from '../../common/guards/roles.guard';
-import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
-import { Roles } from '../../common/decorators/roles.decorator';
+
+// Service
+import { UserService } from './user.service';
+
+// Constants
 import { Role } from './constants/role.enum';
+
 
 @Controller('users')
 export class UserController {

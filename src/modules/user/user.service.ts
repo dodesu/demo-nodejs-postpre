@@ -1,15 +1,31 @@
-import { Injectable, ConflictException, NotFoundException, UseGuards } from '@nestjs/common';
+// NestJS core
+import {
+    Injectable,
+    ConflictException,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
+// Third-party
+import * as bcrypt from 'bcrypt';
+
+// TypeORM
 import { Repository, Not } from 'typeorm';
+
+// Entities
 import { User } from './entities/user.entity';
+import { Book } from '../book/entities/book.entity';
+
+// DTOs
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcrypt';
-import { BookResponseDto } from '../book/dto/book-response.dto';
-import { Book } from '../book/entities/book.entity';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserAdminViewDto } from './dto/user-admin-view.dto';
+import { BookResponseDto } from '../book/dto/book-response.dto';
+
+// Constants
 import { Role } from './constants/role.enum';
+
 
 @Injectable()
 export class UserService {
