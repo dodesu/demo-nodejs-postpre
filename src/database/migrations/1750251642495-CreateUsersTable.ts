@@ -38,7 +38,7 @@ export class CreateUsersTable1750251642495 implements MigrationInterface {
                         name: 'role',
                         type: 'varchar',
                         length: '20',
-                        default: 'user',
+                        default: `'user'`,
                     },
                     {
                         name: 'created_at',

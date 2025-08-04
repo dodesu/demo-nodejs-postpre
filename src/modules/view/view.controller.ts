@@ -7,7 +7,7 @@ import { GenreService } from '../genre/genre.service';
 import { AuthorService } from '../author/author.service';
 //decorator
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
 import { SearchBookDto } from '../book/dto/search-book.dto';
 
 @Controller()

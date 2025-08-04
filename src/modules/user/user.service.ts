@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, UseGuards } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Not } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -8,6 +8,8 @@ import * as bcrypt from 'bcrypt';
 import { BookResponseDto } from '../book/dto/book-response.dto';
 import { Book } from '../book/entities/book.entity';
 import { UserResponseDto } from './dto/user-response.dto';
+import { UserAdminViewDto } from './dto/user-admin-view.dto';
+import { Role } from './constants/role.enum';
 
 @Injectable()
 export class UserService {
@@ -19,18 +21,24 @@ export class UserService {
         private bookRepository: Repository<Book>,
     ) { }
 
-    async getAll() {
+    async getAll(currentUser?) {
         const users = await this.userRepository.find();
 
+        if (currentUser?.role === Role.ADMIN) {
+            return users.map((user) => new UserAdminViewDto(user));
+        }
         return users.map((user) => new UserResponseDto(user));
     }
 
-    async getById(id: number) {
+    async getById(id: number, currentUser?) {
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
             throw new NotFoundException(`User with ID ${id} not found.`);
         }
 
+        if (currentUser?.role === Role.ADMIN) {
+            return new UserAdminViewDto(user);
+        }
         return new UserResponseDto(user);
     }
 
@@ -42,8 +50,8 @@ export class UserService {
         return this.userRepository.findOne({ where: { username } });
     }
 
-    async create(dto: CreateUserDto) {
-        const { username, email, password } = dto;
+    async create(dto: CreateUserDto, user?) {
+        const { username, email, password, role } = dto;
 
         const whereConditions: any[] = [
             { username: username },
@@ -66,20 +74,30 @@ export class UserService {
             }
         }
 
-        // note: add role for user later
-        this.userRepository.create({
+        const newUser = this.userRepository.create({
             username,
             email,
             password
         });
 
-        const saved = await this.userRepository.save(dto);
+        if (role && user?.role === Role.ADMIN) {
+            newUser.role = role as Role;
+        } else {
+            newUser.role = Role.USER;
+            //FIXME: default value is wrong if null. expected = 'user', actual = 'postgres'?? 
+        }
+
+        const saved = await this.userRepository.save(newUser);
+
+        if (user?.role === Role.ADMIN) {
+            return new UserAdminViewDto(saved);
+        }
 
         return new UserResponseDto(saved);
     }
 
-    async update(id: number, dto: UpdateUserDto) {
-        const { username, email, password } = dto;
+    async update(id: number, dto: UpdateUserDto, currentUser) {
+        const { username, email, password, role } = dto;
 
         const user = await this.userRepository.findOne({ where: { id } });
         if (!user) {
@@ -119,8 +137,15 @@ export class UserService {
             user.password = password.slice(0, 6) === '$2a$10' ? password : await bcrypt.hash(password, 10);
         }
 
+        if (role && currentUser.role === Role.ADMIN) {
+            user.role = role as Role;
+        }
+
         const updated = await this.userRepository.save(user);
 
+        if (currentUser.role === Role.ADMIN) {
+            return new UserAdminViewDto(updated);
+        }
         return new UserResponseDto(updated);
     }
 
