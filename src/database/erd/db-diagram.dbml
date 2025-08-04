@@ -1,4 +1,5 @@
 //Version: 0.1
+// Paste this file into https://dbdiagram.io/d to visualize the database schema.
 
 Table users {
   id int [pk, increment]
