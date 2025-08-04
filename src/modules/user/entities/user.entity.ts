@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 
 import { Book } from '../../book/entities/book.entity';
+import { Role } from '../constants/role.enum';
 
 @Entity('users')
 @Unique(['username'])
@@ -19,14 +20,17 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ unique: true, length: 50 })
+    @Column({ type: 'varchar', unique: true, length: 50 })
     username: string;
 
-    @Column({ unique: true, length: 255 })
+    @Column({ type: 'varchar', unique: true, length: 255 })
     email?: string;
 
-    @Column({ length: 60 })
+    @Column({ type: 'varchar', length: 60 })
     password: string;
+
+    @Column({ type: 'varchar', length: 20, default: Role.USER })
+    role: Role;
 
     @CreateDateColumn({ type: 'timestamp', name: 'created_at' })
     createdAt: Date;

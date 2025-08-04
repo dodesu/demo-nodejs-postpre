@@ -11,7 +11,7 @@ export async function ReadBooksSeeder(connection: Connection) {
     const userRepo = connection.getRepository(User);
     const bookRepo = connection.getRepository(Book);
 
-    const totalBooksRead = 2;
+    const totalBooksRead = 5;
 
     try {
         const users = await userRepo.find({ relations: ['readBooks'] }); // Load users with relations
