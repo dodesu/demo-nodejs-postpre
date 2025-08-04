@@ -47,8 +47,14 @@ export class AuthService {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) throw new UnauthorizedException('Wrong password');
 
+        const payload = {
+            sub: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role,
+        };
         return {
-            access_token: this.jwtService.sign(user)
+            access_token: this.jwtService.sign(payload)
             // note: this can make multiple tokens. issues in future
         };
     }
