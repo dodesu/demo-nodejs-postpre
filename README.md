@@ -1,5 +1,6 @@
 # 🌟 Demo Nodejs-PostpreSQL
-
+> Name: BookTracker
+> Version: 0.1
 > A simple RESTful API built with **NestJS** and **PostgreSQL** to manage books and track books a user has read.
 ---
 
@@ -7,14 +8,17 @@
 ```
 src/
 ├── common/                 # Shared utilities
-│   ├── config/             # Global configuration files
 │   ├── decorators/         # Custom decorators
 │   ├── filters/            # Exception filters
+│   └── guards/      
+│     
+├── config/                 # Global configuration files
 │   └── database.config.ts  # Database connection config
 │
 ├── database/               # Database migration & seeding
 │   ├── migrations/         # TypeORM migrations
 │   └── seeds/              # Seed data
+│   └── erd/                # ERD docs, database structure
 │
 ├── modules/                # Main application modules
 │   ├── auth/               # Authentication (login/register)
@@ -92,6 +96,33 @@ npm run seed
 ```bash
 npm run start:dev
 ```
+
+## 📬 Request Flow Overview
+Client (HTTP Request)
+    ↓
+[Controller]
+book.controller.ts
+    → Receives request (e.g., POST /books)
+    → Validates DTO (create-book.dto.ts)
+    ↓
+[Service]
+book.service.ts
+    → Business logic: create book, check user, handle relations
+    → Calls repository (via TypeORM)
+    ↓
+[Entity + DB Layer]
+book.entity.ts + typeorm
+    → Saves book to database
+    ↓
+[Service]
+    → Returns created book data (or error)
+    ↓
+[Controller]
+    → Transforms to response DTO (book-response.dto.ts)
+    ↓
+Client (HTTP Response)
+
+
 ## 📡 API Overview
 
 - **`/auth`**:  

@@ -1,0 +1,38 @@
+//Version: 0.1
+// Paste this file into https://dbdiagram.io/d to visualize the database schema.
+
+Table users {
+  id int [pk, increment]
+  username varchar [unique]
+  email varchar [unique, null]
+  password varchar
+  role varchar
+}
+
+Table authors {
+  id int [pk, increment]
+  name varchar [unique]
+}
+
+Table books {
+  id int [pk, increment]
+  title varchar
+  author_id int [ref: > authors.id, null]
+  creator_id int [ref: > users.id]
+  published_at date [null]
+}
+
+Table genres {
+  id int [pk, increment]
+  name varchar [unique]
+}
+
+Table book_genres {
+  book_id int [pk, ref: > books.id]
+  genre_id int [pk, ref: > genres.id]
+}
+
+Table read_books {
+  user_id int [pk, ref: > users.id]
+  book_id int [pk, ref: > books.id]
+}
