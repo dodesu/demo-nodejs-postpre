@@ -230,3 +230,25 @@ td {
 .hidden {
     display: none;
 }
+
+
+.add-button {
+    margin-top: 30px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.add-button button {
+    background-color: #404dff;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.add-button button:hover {
+    background-color: #444;
+}
